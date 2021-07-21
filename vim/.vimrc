@@ -597,12 +597,8 @@ tnoremap <A-l> <C-\><C-N><C-w>l
 
 " rest split mode (vertical-horizontal)
 let vrc_horizontal_split=1
-
-" tab selection for nvim-completion manager
-if has("nvim")
-  inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-  inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-endif
+" It's useful when we don't want to include the response header in the output view but still want the output to be formatted or syntax-highlighted.
+let g:vrc_response_default_content_type = 'application/json'
 
 
 " git blame auto start, only for nvim (w virtual text, sorry vim)
@@ -671,15 +667,19 @@ set shortmess+=c
 set signcolumn=yes
 " Use tab for trigger completion with characters ahead and navigate.
 " Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
-" inoremap <silent><expr> <TAB>
-"       \ pumvisible() ? "\<C-n>" :
-"       \ <SID>check_back_space() ? "\<TAB>" :
-"       \ coc#refresh()
-" inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-" function! s:check_back_space() abort
-"   let col = col('.') - 1
-"   return !col || getline('.')[col - 1]  =~# '\s'
-" endfunction
+noremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+"Use <Tab> and <S-Tab> to navigate the completion list:
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
 " Use <c-space> to trigger completion.
 inoremap <silent><expr> <c-space> coc#refresh()
 " Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
@@ -984,6 +984,9 @@ Plug 'maksimr/vim-jsbeautify'
 " rest console
 Plug 'diepm/vim-rest-console'
 
+" auto idention detectin
+Plug 'tpope/vim-sleuth'
+
 " git blame (not found in others...)
 " Plug 'zivyangll/git-blame.vim'
 
@@ -1015,6 +1018,12 @@ Plug 'eliba2/vim-node-inspect'
 
 " typescript
 Plug 'leafgarland/typescript-vim'
+
+" treesitting
+if has("nvim")
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+  Plug 'nvim-treesitter/playground'
+endif
 
 
 " Initialize pugin system
