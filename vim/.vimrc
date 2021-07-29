@@ -125,6 +125,7 @@ map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
 noremap <leader>tj :set filetype=javascript<CR>
 noremap <leader>th :set filetype=html<CR>
 noremap <leader>tp :set filetype=php<CR>
+noremap <leader>tr :set filetype=rest<CR>
 
 " Ale config
 " ALE neovim, show virtual text
@@ -307,9 +308,25 @@ vnoremap <silent> <Leader>y :w !xclip -i -sel c<CR><CR>
   "let g:ackprg = 'ag --vimgrep --path-to-ignore ~/.config/ag'
 "endif
 
-" bind c-f to grep word under cursor
-" nnoremap <C-f> :CtrlSF "\b<C-R><C-W>\b"<CR>:cw<CR>
-nnoremap <Leader>a :CtrlSF<Space>
+function! SearchText(isVisual)
+  echom "1 ".a:isVisual
+  if a:isVisual
+    let text = GetVisualSelection()
+    exec ':CtrlSF '.text
+  else
+    let text = expand("<cword>")
+    exec ':CtrlSF '.text
+  endif
+endfunction
+" bind a-e to grep word under cursor
+nnoremap <A-e> :call SearchText(0)<CR>
+vnoremap <A-e> :call SearchText(1)<CR>
+" osx equivalent
+nnoremap <D-e> :call SearchText(0)<CR>
+vnoremap <D-e> :call SearchText(1)<CR>
+
+
+nnoremap <Leader>s :CtrlSF<Space>
 nnoremap <Leader>c :CtrlSFToggle<CR>
 "let g:ctrlsf_auto_close = 0
 let g:ctrlsf_position = 'right'
@@ -596,7 +613,7 @@ tnoremap <A-l> <C-\><C-N><C-w>l
 " autocmd FileType fzf tnoremap <ESC> :q<CR>
 
 " rest split mode (vertical-horizontal)
-let vrc_horizontal_split=1
+" let vrc_horizontal_split=1
 " It's useful when we don't want to include the response header in the output view but still want the output to be formatted or syntax-highlighted.
 let g:vrc_response_default_content_type = 'application/json'
 
@@ -702,26 +719,40 @@ function! s:show_documentation()
     call CocAction('doHover')
   endif
 endfunction
-" Highlight symbol under cursor on CursorHold
-" removed! causes issues with vim
-" autocmd CursorHold * silent call CocActionAsync('highlight')
-" Using CocList
-" Show all diagnostics
-" nnoremap <silent> <space>a  :<C-u>CocList diagnostics<cr>
-" Manage extensions
-" nnoremap <silent> <space>e  :<C-u>CocList extensions<cr>
-" Show commands
-" nnoremap <silent> <space>c  :<C-u>CocList commands<cr>
-" Find symbol of current document
-" nnoremap <silent> <space>o  :<C-u>CocList outline<cr>
-" Search workspace symbols
-" nnoremap <silent> <space>s  :<C-u>CocList -I symbols<cr>
-" Do default action for next item.
-" nnoremap <silent> <space>j  :<C-u>CocNext<CR>
-" Do default action for previous item.
-" nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
-" Resume latest coc list
-" nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
+" coc-prettier
+command! -nargs=0 Prettier :CocCommand prettier.formatFile
+
+" Highlight the symbol and its references when holding the cursor.
+autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Symbol renaming.
+nmap <leader>rn <Plug>(coc-rename)
+
+" Formatting selected code.
+xmap <leader>f  <Plug>(coc-format-selected)
+nmap <leader>f  <Plug>(coc-format-selected)
+
+augroup mygroup
+  autocmd!
+  " Setup formatexpr specified filetype(s).
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  " Update signature help on jump placeholder.
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup end
+
+" Applying codeAction to the selected region.
+" Example: `<leader>aap` for current paragraph
+xmap <leader>a  <Plug>(coc-codeaction-selected)
+nmap <leader>a  <Plug>(coc-codeaction-selected)
+
+" Remap keys for applying codeAction to the current buffer.
+nmap <leader>ac  <Plug>(coc-codeaction)
+" Apply AutoFix to problem on the current line.
+nmap <leader>qf  <Plug>(coc-fix-current)
+
+
+
+
 """ end of coc configuration
 
 
@@ -805,21 +836,31 @@ endfunction
 
 " note: can also use nodejs
 " node -e "const fs=require('fs');var s=fs.readFileSync(0);console.log(unescape(s))"
-function! UrlEscape()
-let selection = GetVisualSelection()
-if len(selection) == 0
-" no selection, run on the whole buffer
-execute("%! python -c 'import sys, urllib as ul; print ul.unquote(sys.stdin.read());'")
-else
-" exec on selection
-execute("'<,'>!python -c 'import sys, urllib as ul; print ul.unquote(sys.stdin.read());'")
-endif
+" escape = 1: escape, 0 is for unescape
+function! UrlEscape(escape)
+  let selection = GetVisualSelection()
+  if len(selection) == 0
+    " no selection, run on the whole buffer
+    if a:escape
+      execute("%! python -c 'import sys, urllib as ul; print ul.quote(sys.stdin.read());'")
+    else
+      execute("%! python -c 'import sys, urllib as ul; print ul.unquote(sys.stdin.read());'")
+    endif
+  else
+    " exec on selection
+    if a:escape
+      execute("'<,'>!python -c 'import sys, urllib as ul; print ul.quote(sys.stdin.read());'")
+    else
+      execute("'<,'>!python -c 'import sys, urllib as ul; print ul.unquote(sys.stdin.read());'")
+    endif
+  endif
 endfunction
 
 
 noremap <leader>6 :call EncodeDecodeBase64('e')<CR>
 noremap <leader>7 :call EncodeDecodeBase64('d')<CR>
-noremap <leader>8 :call UrlEscape()<CR>
+noremap <leader>8 :call UrlEscape(1)<CR>
+noremap <leader>9 :call UrlEscape(0)<CR>
 
 
 
@@ -845,6 +886,20 @@ endfunction
 nnoremap <leader><C-O> :call JumpToNextBufferInJumplist(-1)<CR>
 nnoremap <leader><C-I> :call JumpToNextBufferInJumplist( 1)<CR>
 
+
+
+" easy jump (eb)
+noremap <c-k> 5k
+noremap <c-j> 5j
+
+
+
+" telescope
+" Find files using Telescope command-line sugar.
+nnoremap <leader>ff <cmd>Telescope find_files<cr>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
@@ -1019,15 +1074,41 @@ Plug 'eliba2/vim-node-inspect'
 " typescript
 Plug 'leafgarland/typescript-vim'
 
-" treesitting
 if has("nvim")
+  " treesitting
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-treesitter/playground'
+  " telescope. fzf alike
+  Plug 'nvim-lua/popup.nvim'
+  Plug 'nvim-lua/plenary.nvim'
+  Plug 'nvim-telescope/telescope.nvim'
 endif
-
 
 " Initialize pugin system
 call plug#end()
+
+
+
+"nvim treesitter
+if has("nvim")
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ignore_install = {}, -- List of parsers to ignore installing
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+    disable = {},  -- list of language that will be disabled
+    -- Setting his to true will run `:h syntax` and tree-sitter at the same time.
+    -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
+    -- Using this option may slow down your editor, and you may see some duplicate highlights.
+    -- Instead of true it can also be a list of languages
+    additional_vim_regex_highlighting = false,
+  },
+}
+EOF
+endif
+
+
 
 " color scheme
 "set background=dark
