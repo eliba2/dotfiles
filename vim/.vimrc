@@ -1,6 +1,4 @@
 "
-"
-"
 " using tabs
 
 " use tabs
@@ -53,26 +51,8 @@ set smartcase
 " for gitgutter - updates the display faster (default = ~5 seconds)
 set updatetime=2000
 
-" prevent preview window
-" set completeopt-=preview
-
-" tags
-" C-/ Open the definition in a new tab
-" Alt+] - Open the definition in a vertical split
-map <C-\> :tab split<CR>:exec("tag ".expand("<cword>"))<CR>
-map <A-]> :vsp <CR>:exec("tag ".expand("<cword>"))<CR>
-
-
-
-" gutentags - replaced with coc
-" let g:gutentags_ctags_exclude = ['*.css', '*.html']
-" let g:gutentags_cache_dir = '~/.vim/tags'
-" let g:gutentags_define_advanced_commands=1
-" let g:gutentags_trace = 1
-"let g:gutentags_ctags_executable = 'jsctags'
-" let g:gutentags_project_root_finder = 'projectroot#get'
-" ignore globally(?)
-" set wildignore=node_modules
+" space will add a space in normal mode
+nnoremap <space> i<space><esc>
 
 "neocomplete
 "let g:neocomplete#enable_at_startup = 1
@@ -235,8 +215,8 @@ endfunction
 
 
 " nerdcommenter
-" noremap <leader>\ :call NERDComment(0,"toggle")<CR>
-noremap <leader>\ :TComment<CR>
+noremap <leader>\ :call nerdcommenter#Comment(0,"toggle")<CR>
+" noremap <leader>\ :TComment<CR>
 
 
 " js beautifieer (+html/css/json/jsx)
@@ -309,10 +289,9 @@ vnoremap <silent> <Leader>y :w !xclip -i -sel c<CR><CR>
 "endif
 
 function! SearchText(isVisual)
-  echom "1 ".a:isVisual
   if a:isVisual
     let text = GetVisualSelection()
-    exec ':CtrlSF '.text
+    exec ':CtrlSF -- "'.text.'"'
   else
     let text = expand("<cword>")
     exec ':CtrlSF '.text
@@ -447,6 +426,9 @@ nnoremap <expr> k v:count ? 'k' : 'gk'
 inoremap <leader>; <C-o>A;<esc>
 nnoremap <leader>; A;<esc>
 
+" allow movment in insert mode: end and beginning of line
+inoremap <C-e> <C-o>$
+inoremap <C-a> <C-o>^
 
 
 
@@ -629,13 +611,14 @@ let g:vrc_response_default_content_type = 'application/json'
 nnoremap <leader>gs :Git<CR>
 nnoremap <leader>gc :G commit<CR>
 nnoremap <leader>gd :Gdiffsplit<CR>
-nnoremap <leader>gl :Glog<CR>
+nnoremap <leader>gl :G log<CR>
 nnoremap <leader>gp :G grep<Space>
 " nnoremap <leader>gb :G branch --sort=-committerdate<CR>
 nnoremap <leader>gL :execute "Git log --patch -- ".expand('%p')<CR>
 " custom defined
-nnoremap <leader>gm :Gblame<CR>
-nnoremap <leader>gb :Gbranch<CR>
+nnoremap <leader>gm :G blame<CR>
+nnoremap <leader>gb :G branch<CR>
+nnoremap <leader>gg :Merginal<CR>
 
 
 
@@ -892,8 +875,6 @@ nnoremap <leader><C-I> :call JumpToNextBufferInJumplist( 1)<CR>
 noremap <c-k> 5k
 noremap <c-j> 5j
 
-
-
 " telescope
 " Find files using Telescope command-line sugar.
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
@@ -902,12 +883,36 @@ nnoremap <leader>fb <cmd>Telescope buffers<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 
+
+function! ToggleQuotes()
+  " get the WORD under the cursor
+  let word = expand("<cWORD>")
+  if len(word) < 4
+    return
+  endif
+  " if any quotes from both sides, remove them
+  let fc = word[0]
+  let lc = word[len(word)-1]
+  if lc == '"' && lc == fc
+    normal ds"
+  elseif lc == "'" && lc == fc
+    normal ds'
+  else
+    normal csw'
+  endif
+endfunction
+
+" vim-surround toggle quote helper function
+nnoremap <c-'> :call ToggleQuotes()<CR>
+
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
 
 
 " Make sure you use single quotes
 Plug 'tpope/vim-fugitive'
+" branch handling fugitive extension
+Plug 'idanarye/vim-merginal'
 " commit browser
 Plug 'junegunn/gv.vim'
 " show changes
@@ -959,26 +964,26 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
 "Plug 'xolox/vim-easytags'
-Plug 'xolox/vim-misc'
+"Plug 'xolox/vim-misc'
 " tags generation
 " Plug 'ludovicchabant/vim-gutentags'
 " jsctags (and others support for gutentags
 " Plug 'tkonolige/ctags-shim'
 
-Plug 'sjl/gundo.vim' " undo tree visualiser
+"Plug 'sjl/gundo.vim' " undo tree visualiser
 
 " Plug 'sheerun/vim-polyglot' " language syntax/ident
 Plug 'mhinz/vim-startify'
 
-Plug 'tomtom/tcomment_vim'
+" Plug 'tomtom/tcomment_vim'
 
-"Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdcommenter'
 
 "Plug 'Valloric/YouCompleteMe'
 
 "Plug 'cohama/lexima.vim'
 
-Plug 'qpkorr/vim-bufkill'
+"Plug 'qpkorr/vim-bufkill'
 
 
 " Plug 'dense-analysis/ale'
@@ -1000,7 +1005,7 @@ Plug 'mattn/emmet-vim'
 " Plug 'SirVer/ultisnips'
 
 " ident lines
-Plug 'Yggdroot/indentLine'
+"Plug 'Yggdroot/indentLine'
 
 " vim-esearch
 " Plug 'eugen0329/vim-esearch'
@@ -1021,13 +1026,13 @@ Plug 'moll/vim-node'
 " Plug 'rstacruz/vim-closer'
 
 " Icons
-Plug 'ryanoasis/vim-devicons'
+"Plug 'ryanoasis/vim-devicons'
 
 " marks on left line
 Plug 'kshenoy/vim-signature'
 
 " as is
-Plug 'maksimr/vim-jsbeautify'
+"Plug 'maksimr/vim-jsbeautify'
 
 " as is (colortheme)
 " Plug 'NLKNguyen/papercolor-theme'
@@ -1072,7 +1077,7 @@ Plug 'tpope/vim-sleuth'
 Plug 'eliba2/vim-node-inspect'
 
 " typescript
-Plug 'leafgarland/typescript-vim'
+"Plug 'leafgarland/typescript-vim'
 
 if has("nvim")
   " treesitting
@@ -1081,7 +1086,7 @@ if has("nvim")
   " telescope. fzf alike
   Plug 'nvim-lua/popup.nvim'
   Plug 'nvim-lua/plenary.nvim'
-  Plug 'nvim-telescope/telescope.nvim'
+  "Plug 'nvim-telescope/telescope.nvim'
 endif
 
 " Initialize pugin system
