@@ -26,14 +26,6 @@ set diffopt+=vertical
 
 " mouse
 set mouse=a
-"patheon
-" To disable a plugin, add it's bundle name to the following list
-" let g:pathogen_blacklist = []
-
-""call add(g:pathogen_blacklist, 'ctrlp')
-
-" disabled, causes issues
-"call pathogen#infect()
 
 syntax on
 filetype plugin indent on
@@ -53,53 +45,6 @@ set updatetime=2000
 
 " space will add a space in normal mode
 nnoremap <space> i<space><esc>
-
-"neocomplete
-"let g:neocomplete#enable_at_startup = 1
- "<CR>: close popup and save indent.
-"inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
-"function! s:my_cr_function()
-  "return (pumvisible() ? "\<C-y>" : "" ) . "\<CR>"
-   "For no inserting <CR> key.
-  "return pumvisible() ? "\<C-y>" : "\<CR>"
-"endfunction
- "<TAB>: completion.
-"inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
- "<C-h>, <BS>: close popup and delete backword char.
-"inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
-"inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
- "Close popup by <Space>.
-"inoremap <expr><Space> pumvisible() ? "\<C-y>" : "\<Space>"
-
-" AutoComplPop like behavior.
-"let g:neocomplete#enable_auto_select = 1
-
-"ctrl-p
-"let g:ctrlp_map = '<c-p>'
-""if has("gui_macvim")
-""  let g:ctrlp_map = '<D-p>'
-""endif
-"let g:ctrlp_cmd = 'CtrlPCurWD'
-"let g:ctrlp_working_path_mode = 'ra'
-"set wildignore+=*.so,*.swp,*.zip
-"let g:ctrlp_custom_ignore = '\v[\/](build-production|build-staging|build-production-monday|build-staging-monday|target|dist)|(\.(swp|ico|git|svn|sass-cache|tmp))$'
-" let g:ctrlp_user_command = 'find %s -type f'
-"let g:ctrlp_user_command = 'ag %s -i --nocolor --nogroup --hidden
-"      \ --ignore .git
-"      \ --ignore .svn
-"      \ --ignore node_modules
-"      \ --ignore vendor
-"      \ --ignore .DS_Store
-"      \ --ignore .tmp
-"      \ --ignore .sass-cache
-"      \ --ignore "**/*.min.*"
-"      \ -g ""'
-"" eb - add mapping for insert mode
-"imap <C-p> <Esc>:CtrlP<CR>
-"" and enable paste in ctrlp
-"if has("gui_macvim")
-"  let g:ctrlp_prompt_mappings = { 'YankLine()': ['<D-v>'], 'CreateNewFile()': []  }
-"endif
 
 " setting the filetype
 noremap <leader>tj :set filetype=javascript<CR>
@@ -247,33 +192,6 @@ set autoread
 if has('nvim')
 set inccommand=split
 endif
-
-
-
-"if !has('nvim')
-  "set gfn=Monaco:h13
-"endif
-
-" Unite
-"let g:unite_source_history_yank_enable = 1
-"call unite#filters#matcher_default#use(['matcher_fuzzy'])
-"nnoremap <leader>t :<C-u>Unite -no-split -buffer-name=files   -start-insert file_rec/async:!<cr>
-"nnoremap <leader>f :<C-u>Unite -no-split -buffer-name=files   -start-insert file<cr>
-"nnoremap <leader>r :<C-u>Unite -no-split -buffer-name=mru     -start-insert file_mru<cr>
-"nnoremap <leader>o :<C-u>Unite -no-split -buffer-name=outline -start-insert outline<cr>
-"nnoremap <leader>y :<C-u>Unite -no-split -buffer-name=yank    history/yank<cr>
-"nnoremap <leader>e :<C-u>Unite -no-split -buffer-name=buffer  buffer<cr>
-
-
-" Custom mappings for the unite buffer
-"autocmd FileType unite call s:unite_settings()
-"function! s:unite_settings()
-  " Play nice with supertab
-"  let b:SuperTabDisabled=1
-  " Enable navigation with control-j and control-k in insert mode
-"  imap <buffer> <C-j>   <Plug>(unite_select_next_line)
-"  imap <buffer> <C-k>   <Plug>(unite_select_previous_line)
-"endfunction
 
 " copy (also) 2 clipboard
 set clipboard=unnamed
@@ -1032,7 +950,7 @@ Plug 'moll/vim-node'
 Plug 'kshenoy/vim-signature'
 
 " as is
-"Plug 'maksimr/vim-jsbeautify'
+Plug 'maksimr/vim-jsbeautify'
 
 " as is (colortheme)
 " Plug 'NLKNguyen/papercolor-theme'
@@ -1069,9 +987,6 @@ Plug 'tpope/vim-sleuth'
 "     \ }
 
 " Plug 'vim-hexokinase' " color inline. need to check which plugin does it currently before enabling
-
-
-
 
 " the best node-debugger in the world
 Plug 'eliba2/vim-node-inspect'
