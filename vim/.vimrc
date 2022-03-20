@@ -23,7 +23,6 @@ autocmd BufRead scp://* :set bt=acwrite
 " set vimdiff default to vertical (on rotated screen it changes)
 set diffopt+=vertical
 
-
 " mouse
 set mouse=a
 
@@ -52,6 +51,10 @@ noremap <leader>th :set filetype=html<CR>
 noremap <leader>tp :set filetype=php<CR>
 noremap <leader>tr :set filetype=rest<CR>
 
+" cursor line; disabled by default, filetype based (ftplugin) will set it for
+" the appropriate types
+set nocuc
+
 " Ale config
 " ALE neovim, show virtual text
 " let g:ale_virtualtext_cursor = 1
@@ -64,8 +67,6 @@ noremap <leader>tr :set filetype=rest<CR>
 " nmap <silent> gD <Plug>(ale_go_to_type_definition)
 " nmap <silent> gr <Plug>(ale_rename)
 " nnoremap K <Plug>(ale_hover)
-
-
 
 let g:ale_linters = {
 \ 'javascript': ['standard'], 
@@ -239,6 +240,8 @@ let g:ctrlsf_auto_focus = {
 let g:ctrlsf_mapping = {
     \ "vsplit": "<C-v>"
     \ }
+" regex by default
+let g:ctrlsf_regex_pattern = 1
 " Old ack-style
 "nnoremap <C-f> :Ack! "\b<C-R><C-W>\b"<CR>:cw<CR>
 "cnoreabbrev Ack Ack!
@@ -354,34 +357,12 @@ inoremap <C-a> <C-o>^
 " Show as much as possible of a wrapped last line, not just "@".
 set display=lastline
 
-" tagbar toggle
-" nmap <C-x> :TagbarToggle<CR>
-
 " highlight current line
 if !has("nvim")
   set cursorline
 endif
-" all o these - to speed up
-"set ttyfast
-"set lazyredraw
-"set re=1
-"augroup ft_rb
-"    au!
-"    " fix the SLOOOW syntax highlighting
-"    au FileType ruby setlocal re=1 foldmethod=manual
-"augroup END
-"syntax sync minlines=256
-
-
-" close quick fix; either l-c or esc in normal mode (not used with ctrlfs)
-"nnoremap <leader>c :copen<CR>
-"nnoremap <ESC> :ccl<CR>
-
 " remove highlight
-  nnoremap <leader>h :noh<CR>
-
-" }}}
-
+nnoremap <C-h> :noh<CR>
 
 "add minus to word
 set iskeyword+=-
@@ -516,6 +497,8 @@ tnoremap <A-l> <C-\><C-N><C-w>l
 " let vrc_horizontal_split=1
 " It's useful when we don't want to include the response header in the output view but still want the output to be formatted or syntax-highlighted.
 let g:vrc_response_default_content_type = 'application/json'
+" c-j is used for navigation, change to 
+let g:vrc_trigger = '<C-CR>'
 
 
 " git blame auto start, only for nvim (w virtual text, sorry vim)
@@ -650,8 +633,6 @@ nmap <leader>a  <Plug>(coc-codeaction-selected)
 nmap <leader>ac  <Plug>(coc-codeaction)
 " Apply AutoFix to problem on the current line.
 nmap <leader>qf  <Plug>(coc-fix-current)
-
-
 
 
 """ end of coc configuration
@@ -823,6 +804,9 @@ endfunction
 " vim-surround toggle quote helper function
 nnoremap <c-'> :call ToggleQuotes()<CR>
 
+" dadbod/dadbod-ui
+let g:db_ui_save_location = '~/tmp/vimfiles'
+
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
 
@@ -873,7 +857,9 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 " Plug 'dracula/vim', { 'as': 'dracula' }
 " Plug 'KeitaNakamura/neodark.vim'
 " Plug 'joshdick/onedark.vim'
-Plug 'ayu-theme/ayu-vim'
+" Plug 'ayu-theme/ayu-vim'
+"Plug 'wuelnerdotexe/vim-enfocado'
+Plug 'drewtempelmeyer/palenight.vim'
 
 
 
@@ -965,6 +951,13 @@ Plug 'diepm/vim-rest-console'
 " auto idention detectin
 Plug 'tpope/vim-sleuth'
 
+" database if
+Plug 'tpope/vim-dadbod'
+Plug 'kristijanhusak/vim-dadbod-ui'
+
+"pgp
+Plug 'jamessan/vim-gnupg'
+
 " git blame (not found in others...)
 " Plug 'zivyangll/git-blame.vim'
 
@@ -1030,6 +1023,7 @@ endif
 
 
 
+set termguicolors
 " color scheme
 "set background=dark
 "colorscheme solarized
@@ -1047,8 +1041,19 @@ endif
 " set background=dark
 " colorscheme PaperColor
 " ayu theme
-set termguicolors
-let ayucolor="dark"
-colorscheme ayu
+"let ayucolor="dark"
+"colorscheme ayu
+"
+" enfocado
+"colorscheme enfocado
+"let g:enfocado_style = 'nature' " Available: `nature` or `neon`.
+"let g:airline_theme = 'enfocado'
+set background=dark
+colorscheme palenight
+let g:airline_theme = "palenight"
+let g:palenight_terminal_italics=1
+if (has("termguicolors"))
+  set termguicolors
+endif
 
 
