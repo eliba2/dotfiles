@@ -282,8 +282,10 @@ function! DeleteHiddenBuffers()
   endfor
 endfunction
 
-" nnoremap <leader>q :call DeleteHiddenBuffers()<CR>
+" quit; close current buffer. if no buffers left, closes vim
 nnoremap <leader>q :q<CR>
+" close current tab
+nnoremap <leader>w :tabclose<CR>
 
 
 " pretty print json
@@ -807,6 +809,11 @@ nnoremap <c-'> :call ToggleQuotes()<CR>
 " dadbod/dadbod-ui
 let g:db_ui_save_location = '~/tmp/vimfiles'
 
+
+" javascript tooling
+nnoremap <c-p> :Prettier<CR>
+
+
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
 
@@ -1055,5 +1062,3 @@ let g:palenight_terminal_italics=1
 if (has("termguicolors"))
   set termguicolors
 endif
-
-
