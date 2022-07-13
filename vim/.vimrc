@@ -37,7 +37,7 @@ set number
 syntax enable
 " smartcase (If you search for something containing uppercase characters, it will do a case sensitive search; if you search for something purely lowercase, it will do a case insensitive search. You can use \c and \C to override this)
 set ignorecase
-set smartcase
+"set smartcase
 
 " for gitgutter - updates the display faster (default = ~5 seconds)
 set updatetime=2000
@@ -229,6 +229,7 @@ nnoremap <Leader>c :CtrlSFToggle<CR>
 "let g:ctrlsf_auto_close = 0
 let g:ctrlsf_position = 'right'
 let g:ctrlsf_backend = 'ag'
+let g:ctrlsf_open_left = 1
 
 let g:ctrlsf_extra_backend_args = {
     \ 'ag': '--path-to-ignore ~/.config/ag/.ignore'
@@ -242,6 +243,8 @@ let g:ctrlsf_mapping = {
     \ }
 " regex by default
 let g:ctrlsf_regex_pattern = 1
+" case insensitive
+let g:ctrlsf_case_sensitive = 'no'
 " Old ack-style
 "nnoremap <C-f> :Ack! "\b<C-R><C-W>\b"<CR>:cw<CR>
 "cnoreabbrev Ack Ack!
@@ -317,7 +320,7 @@ vnoremap C "_C
 
 " edit vimrc
 nnoremap <leader>vi :vsplit $MYVIMRC<cr>
-" save vimrc
+" source vimrc
 nnoremap <leader>sv :source $MYVIMRC<cr>
 " edit gvimrc
 nnoremap <leader>gi :vsplit $HOME/.gvimrc<cr>
@@ -808,11 +811,33 @@ nnoremap <c-'> :call ToggleQuotes()<CR>
 
 " dadbod/dadbod-ui
 let g:db_ui_save_location = '~/tmp/vimfiles'
+let g:db_ui_use_nerd_fonts = 1
+let g:db_ui_win_position = 'right'
 
 
 " javascript tooling
 nnoremap <c-p> :Prettier<CR>
 
+" increase/decrese gui font
+" idea from https://www.vim.org/scripts/script.php?script_id=2321
+function! UpdateFontSize(amount)
+  let font = execute('GuiFont')
+  let fontSize = substitute(font, '^.*:h\([^:]*\).*$', '\1', '')
+  let fontSize += a:amount
+  let newFont = trim(substitute(font, ':h\([^:]*\)', ':h' . fontSize, ''))
+  execute('GuiFont '.newFont)
+endfunction
+
+function! DefaultFontSize()
+  let font = execute('GuiFont')
+  let fontSize = 13 " sorry
+  let newFont = trim(substitute(font, ':h\([^:]*\)', ':h' . fontSize, ''))
+  execute('GuiFont '.newFont)
+endfunction
+
+nnoremap <D-=> :call UpdateFontSize(1)<CR>
+nnoremap <D--> :call UpdateFontSize(-1)<CR>
+nnoremap <D-0> :call DefaultFontSize()<CR>
 
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
@@ -1013,7 +1038,7 @@ call plug#end()
 if has("nvim")
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  ensure_installed = {"javascript", "css", "scss", "typescript", "rust"}, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
   ignore_install = {}, -- List of parsers to ignore installing
   highlight = {
     enable = true,              -- false will disable the whole extension
@@ -1021,7 +1046,7 @@ require'nvim-treesitter.configs'.setup {
     -- Setting his to true will run `:h syntax` and tree-sitter at the same time.
     -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
     -- Using this option may slow down your editor, and you may see some duplicate highlights.
-    -- Instead of true it can also be a list of languages
+    -- Instead of true it can also be: a list of languages
     additional_vim_regex_highlighting = false,
   },
 }
@@ -1062,3 +1087,12 @@ let g:palenight_terminal_italics=1
 if (has("termguicolors"))
   set termguicolors
 endif
+
+
+" load db definition
+try 
+  source ~/.config/local-vim/.dbs.vim
+catch
+  " will silently ignore file-not-found error
+endtry 
+
