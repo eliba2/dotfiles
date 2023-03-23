@@ -20,7 +20,7 @@ if has("nvim")
   set clipboard+=unnamedplus
   " the first uses alt, the second uses the command button
   map π :Files<CR>
-  map … :Ag<CR>
+  map … :Rg<CR>
   map ÷ :BLines<CR>
   map æ :BTags<CR>
   map ˆ :Buffers<CR>
@@ -32,14 +32,13 @@ if has("nvim")
   map ∆ :m +1<CR>
   map ˚ :m -2<CR>
   map † :tabnew<CR>
-  nnoremap ¥ :27 split<CR><C-w><C-w> :term<CR><ESC>i
   " alt-s save
   noremap <silent> ß :update<CR>
   vnoremap <silent> ß <C-C>:update<CR>
   inoremap <silent> ß <C-O>:update<CR>
 
   map <D-p> :Files<CR>
-  map <D-;> :Ag<CR>
+  map <D-;> :Rg<CR>
   map <D-/> :BLines<CR>
   map <D-'> :BTags<CR>
   map <D-i> :Buffers<CR>
@@ -61,5 +60,3 @@ if has("nvim")
   vnoremap <c-tab> <C-C>gt
   inoremap <c-tab> <C-O>gt
 endif
-
-

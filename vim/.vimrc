@@ -1,14 +1,5 @@
-"
-" using tabs
-
 " use tabs
 "set tabstop=4       " The width of a TAB is set to 4.  " Still it is a \t. It is just that Vim will interpret it to be having a width of 4.
-"set shiftwidth=4    " Indents will have a width of 4
-"set noexpandtab    " Use tabs, not spaces
-"set softtabstop=4   " Sets the number of columns for a TAB
-"set autoindent       " Copy indent from current line when starting a new line (ai).
-
-
 " using spaces
 set tabstop=2       " The width of a TAB is set to 4.  " Still it is a \t. It is just that Vim will interpret it to be having a width of 4.
 set shiftwidth=2    " Indents will have a width of 4
@@ -47,6 +38,7 @@ nnoremap <space> i<space><esc>
 
 " setting the filetype
 noremap <leader>tj :set filetype=javascript<CR>
+noremap <leader>tn :set filetype=json<CR>
 noremap <leader>th :set filetype=html<CR>
 noremap <leader>tp :set filetype=php<CR>
 noremap <leader>tr :set filetype=rest<CR>
@@ -101,63 +93,6 @@ let g:airline#extensions#tabline#enabled = 0
 if !has('nvim')
 let g:airline#extensions#ale#enabled = 1
 endif
-
-" nerdtree - mapping moved to gvimrc
-"nnoremap <C-b> :NERDTreeToggle<CR>
-"inoremap <C-b> <Esc>:NERDTreeToggle<CR>
-"if has("gui_macvim")
-  "nnoremap <D-k> :NERDTreeToggle<CR>
-  "inoremap <D-k> <Esc>:NERDTreeToggle<CR>
-"endif
-
-" nnoremap º :NERDTreeFind<CR>
-" let NERDTreeChDirMode=2
-""let NERDTreeChDirMode=0
-" lets try on the right
-" let g:NERDTreeWinPos = "right"
-
-
-" fern (file explorer)
-let g:fern#renderer = "nerdfont"
-nnoremap <M-b> :Fern %:h -drawer -toggle<CR>
-" inoremap <M-l> <Esc>:Fern %:h -drawer -toggle<CR>
-nnoremap <M-l> :Fern . -reveal=% -drawer<CR>
-function! s:init_fern() abort
-  " Define NERDTree like mappings
-  nmap <buffer> t <Plug>(fern-action-open:tabedit)
-  nmap <buffer> T <Plug>(fern-action-open:tabedit)gT
-  nmap <buffer> s <Plug>(fern-action-open:vsplit)
-  nmap <buffer> ma <Plug>(fern-action-new-path)
-  nmap <buffer> r <Plug>(fern-action-reload)
-  nmap <buffer> cd <Plug>(fern-action-cd)
-  nmap <buffer> CD gg<Plug>(fern-action-cd)<C-o>
-
-" Perform enter in explorer style but expand in drawer style
-" ?? doesn't work ??
-  nmap <buffer><expr>
-        \ <Plug>(fern-my-expand-or-enter)
-        \ fern#smart#drawer(
-        \   "\<Plug>(fern-open-or-expand)",
-        \   "\<Plug>(fern-open-or-enter)",
-        \ )
-  nmap <buffer><expr>
-        \ <Plug>(fern-my-collapse-or-leave)
-        \ fern#smart#drawer(
-        \   "\<Plug>(fern-action-collapse)",
-        \   "\<Plug>(fern-action-leave)",
-        \ )
-  nmap <buffer><nowait> l <Plug>(fern-my-expand-or-enter)
-  nmap <buffer><nowait> h <Plug>(fern-my-collapse-or-leave)
-
-  augroup my-glyph-palette
-    autocmd! *
-    autocmd FileType fern call glyph_palette#apply()
-    autocmd FileType nerdtree,startify call glyph_palette#apply()
-  augroup END
-
-
-endfunction
-
 
 
 " nerdcommenter
@@ -225,7 +160,7 @@ vnoremap <D-e> :call SearchText(1)<CR>
 
 
 nnoremap <Leader>s :CtrlSF<Space>
-nnoremap <Leader>c :CtrlSFToggle<CR>
+nnoremap <Leader>x :CtrlSFToggle<CR>
 "let g:ctrlsf_auto_close = 0
 let g:ctrlsf_position = 'right'
 let g:ctrlsf_backend = 'ag'
@@ -266,11 +201,6 @@ set directory^=$HOME/.vim/swap//
 " rainbow
 let g:rainbow_active = 1 "0 if you want to enable it later via :RainbowToggle
 
-" change cursor in different modes, iterm2
-let &t_SI = "\<Esc>]50;CursorShape=1\x7"
-let &t_SR = "\<Esc>]50;CursorShape=2\x7"
-let &t_EI = "\<Esc>]50;CursorShape=0\x7"
-
 " eb - select latest pasted text and ident it
 noremap <leader>ip '[V']=
 
@@ -286,7 +216,7 @@ function! DeleteHiddenBuffers()
 endfunction
 
 " quit; close current buffer. if no buffers left, closes vim
-nnoremap <leader>q :q<CR>
+nnoremap <leader>qq :q<CR>
 " close current tab
 nnoremap <leader>w :tabclose<CR>
 
@@ -370,7 +300,7 @@ endif
 nnoremap <C-h> :noh<CR>
 
 "add minus to word
-set iskeyword+=-
+"set iskeyword+="-"
 
 " fzf
 set rtp+=/usr/local/opt/fzf
@@ -385,9 +315,11 @@ let $FZF_DEFAULT_COMMAND= 'ag -g "" --path-to-ignore ~/.config/ag/.ignore --sile
 " command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>,'--path-to-ignore ~/.config/ag/.ignore', {'options': '--delimiter : --nth 4..'}, <bang>0)
 command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>,'--path-to-ignore ~/.config/ag/.ignore --silent ', {'options': '--expect=ctrl-x,ctrl-v --delimiter : --nth 4 --multi --reverse --preview "~/.vim/plugged/fzf.vim/bin/preview.sh {}"'}, <bang>0)
 " note that alt-p will use RgFiles instead of default
-" back to ag
-" let $FZF_DEFAULT_COMMAND= 'rg --files --hidden --no-ignore-vcs --ignore-file=~/.config/ag/.ignore'
-" command! -bang -nargs=* RgFiles call fzf#run(fzf#wrap({'source': 'rg --files --hidden --no-ignore-vcs --ignore-file=~/.config/ag/.ignore', 'options': '--expect=ctrl-x,ctrl-v --multi --reverse --preview "~/.vim/plugged/fzf.vim/bin/preview.sh {}"' }))
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview({'options': '--expect=ctrl-x,ctrl-v --delimiter : --nth 4 --multi --reverse'}), <bang>0)
+
 
 command! -bang -nargs=? -complete=dir Files
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
@@ -458,7 +390,9 @@ let g:NERDTreePatternMatchHighlightFullName = 1
 "Highlight folders using exact match
 let g:NERDTreeHighlightFolders = 1 " enables folder icon highlighting using exact match
 let g:NERDTreeHighlightFoldersFullName = 1 " highlights the folder name
-
+" add ctrl-k ctrl-j for nerdtree
+autocmd FileType nerdtree nnoremap <buffer> <silent> <c-k> 5k
+autocmd FileType nerdtree nnoremap <buffer> <silent> <c-j> 5j
 
 " Trigger configuration (Optional) - ultrasnip
 let g:UltiSnipsExpandTrigger="<C-9>"
@@ -487,14 +421,19 @@ endfunction
 
 
 " terminal
+function! OpenBottomTerminal()
+    bo new split
+    terminal
+endfunction
 " exit terminal mode
-
 tnoremap jj <C-\><C-n>
 " move between windows in terminal mode
 tnoremap <A-h> <C-\><C-N><C-w>h
 tnoremap <A-j> <C-\><C-N><C-w>j
 tnoremap <A-k> <C-\><C-N><C-w>k
 tnoremap <A-l> <C-\><C-N><C-w>l
+" leader - y to open terminal
+nnoremap <leader>y :call OpenBottomTerminal()<CR>
 
 " autocmd FileType fzf tnoremap <ESC> :q<CR>
 
@@ -504,13 +443,9 @@ tnoremap <A-l> <C-\><C-N><C-w>l
 let g:vrc_response_default_content_type = 'application/json'
 " c-j is used for navigation, change to 
 let g:vrc_trigger = '<C-CR>'
-
-
-" git blame auto start, only for nvim (w virtual text, sorry vim)
-" if has("nvim")
-" let g:blameLineDisplayTimer = 2500
-" nmap <silent> <leader>b :ToggleBlameLine<CR>
-" endif
+let g:vrc_auto_format_response_patterns = {
+  \ 'json': 'jq .'
+\}
 
 
 " fugitive. some disabled because of security!
@@ -524,7 +459,8 @@ nnoremap <leader>gL :execute "Git log --patch -- ".expand('%p')<CR>
 " custom defined
 nnoremap <leader>gm :G blame<CR>
 nnoremap <leader>gb :G branch<CR>
-nnoremap <leader>gg :Merginal<CR>
+nnoremap <leader>gg :DiffviewOpen<CR>
+nnoremap <leader>gG :DiffviewClose<CR>
 
 
 
@@ -552,8 +488,6 @@ command! -bang -nargs=0 Gbranch
   \   },
   \   <bang>0
   \ )
-
-
 
 
 """""" start of Coc configuration
@@ -610,6 +544,7 @@ function! s:show_documentation()
 endfunction
 " coc-prettier
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
+command! -nargs=0 Eslint :CocCommand eslint.executeAutofix
 
 " Highlight the symbol and its references when holding the cursor.
 autocmd CursorHold * silent call CocActionAsync('highlight')
@@ -638,10 +573,24 @@ nmap <leader>a  <Plug>(coc-codeaction-selected)
 nmap <leader>ac  <Plug>(coc-codeaction)
 " Apply AutoFix to problem on the current line.
 nmap <leader>qf  <Plug>(coc-fix-current)
+" Apply Fix all fixable problems.
+nmap <leader>qa  <Plug>(coc-fix-current)
 
+" v0.82 additions - switched to custom menu
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+    inoremap <silent><expr> <C-x><C-z> coc#pum#visible() ? coc#pum#stop() : "\<C-x>\<C-z>"
+" remap for complete to use tab and <cr>
+inoremap <silent><expr> <TAB>
+    \ coc#pum#visible() ? coc#pum#next(1):
+    \ <SID>check_back_space() ? "\<Tab>" :
+    \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+inoremap <silent><expr> <c-space> coc#refresh()
+
+hi CocSearch ctermfg=12 guifg=#18A3FF
+hi CocMenuSel ctermbg=109 guibg=#13354A
 
 """ end of coc configuration
-
 
 "indentline - don't change conceal level
 let g:indentLine_setConceal = 0
@@ -781,11 +730,13 @@ noremap <c-j> 5j
 
 " telescope
 " Find files using Telescope command-line sugar.
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+"nnoremap <leader>ff <cmd>Telescope find_files<cr>
+"nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+"nnoremap <leader>fb <cmd>Telescope buffers<cr>
+"nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
+" emmet additiona snippets
+let g:user_emmet_settings = json_decode(join(readfile(expand('~/.config/emmet/snippets.json')), "\n"))
 
 
 function! ToggleQuotes()
@@ -817,27 +768,52 @@ let g:db_ui_win_position = 'right'
 
 " javascript tooling
 nnoremap <c-p> :Prettier<CR>
+nnoremap <c-0> :Eslint<CR>
+nnoremap <c-a> <Plug>(coc-codeaction)
 
 " increase/decrese gui font
 " idea from https://www.vim.org/scripts/script.php?script_id=2321
 function! UpdateFontSize(amount)
-  let font = execute('GuiFont')
-  let fontSize = substitute(font, '^.*:h\([^:]*\).*$', '\1', '')
-  let fontSize += a:amount
-  let newFont = trim(substitute(font, ':h\([^:]*\)', ':h' . fontSize, ''))
-  execute('GuiFont '.newFont)
+  if exists(':GuiFont')
+    let font = execute('GuiFont')
+    let fontSize = substitute(font, '^.*:h\([^:]*\).*$', '\1', '')
+    let fontSize += a:amount
+    let newFont = trim(substitute(font, ':h\([^:]*\)', ':h' . fontSize, ''))
+    execute('GuiFont '.newFont)
+  endif
+
+  "execute("set guifont=".newFont)
 endfunction
 
 function! DefaultFontSize()
-  let font = execute('GuiFont')
-  let fontSize = 13 " sorry
-  let newFont = trim(substitute(font, ':h\([^:]*\)', ':h' . fontSize, ''))
-  execute('GuiFont '.newFont)
+  if exists(':GuiFont')
+    let font = execute('GuiFont')
+    let fontSize = 13 " sorry
+    let newFont = trim(substitute(font, ':h\([^:]*\)', ':h' . fontSize, ''))
+
+    execute('GuiFont '.newFont)
+  endif
+
+  " execute("set guifont=".newFont)
 endfunction
 
 nnoremap <D-=> :call UpdateFontSize(1)<CR>
 nnoremap <D--> :call UpdateFontSize(-1)<CR>
 nnoremap <D-0> :call DefaultFontSize()<CR>
+
+
+" copy filename to clipboard
+nnoremap <Leader>c :let @+=@%<CR>
+
+" execute current line or current selection in shell and get output
+nnoremap _X  :put =system(getline('.'))<cr>
+vnoremap _X  :<C-U>'>put =system(join(getline('''<','''>'),\"\n\").\"\n\")<cr>
+
+
+" global status line, mvim only
+if has("nvim")
+  set laststatus=3
+endif
 
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
@@ -845,12 +821,13 @@ call plug#begin('~/.vim/plugged')
 
 " Make sure you use single quotes
 Plug 'tpope/vim-fugitive'
-" branch handling fugitive extension
-Plug 'idanarye/vim-merginal'
 " commit browser
 Plug 'junegunn/gv.vim'
 " show changes
 Plug 'airblade/vim-gitgutter'
+" diff alternative (two repos), used for prs - replaced merginal
+Plug 'nvim-lua/plenary.nvim'
+Plug 'sindrets/diffview.nvim'
 
 "if has("nvim")
   " the framework (complete)
@@ -871,19 +848,18 @@ Plug 'brooth/far.vim'
 
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+" fzf-coc integration
+"Plug 'antoinemadec/coc-fzf'
 
 " nerdtree an dplugins
 Plug 'scrooloose/nerdtree'
-Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+" this is the original highlight plugin, throws errors w new nvim
+"Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+" this one fixed it
+Plug 'johnstef99/vim-nerdtree-syntax-highlight'
+
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
-
-" tree viewer alternative
-" Plug 'lambdalisue/fern.vim'
-" Plug 'lambdalisue/nerdfont.vim'
-" Plug 'lambdalisue/glyph-palette.vim'
-" Plug 'lambdalisue/fern-renderer-nerdfont.vim'
-" Plug 'lambdalisue/fern-git-status.vim'
 
 " color schemes
 " Plug 'dracula/vim', { 'as': 'dracula' }
@@ -891,8 +867,8 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 " Plug 'joshdick/onedark.vim'
 " Plug 'ayu-theme/ayu-vim'
 "Plug 'wuelnerdotexe/vim-enfocado'
-Plug 'drewtempelmeyer/palenight.vim'
-
+"Plug 'drewtempelmeyer/palenight.vim'
+Plug 'mhartington/oceanic-next'
 
 
 Plug 'dyng/ctrlsf.vim'
@@ -1019,13 +995,16 @@ Plug 'eliba2/vim-node-inspect'
 " typescript
 "Plug 'leafgarland/typescript-vim'
 
+" codex integration
+Plug 'tom-doerr/vim_codex'
+
+
 if has("nvim")
   " treesitting
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
   Plug 'nvim-treesitter/playground'
   " telescope. fzf alike
-  Plug 'nvim-lua/popup.nvim'
-  Plug 'nvim-lua/plenary.nvim'
+  "Plug 'nvim-lua/plenary.nvim " penary is already added used by diffview
   "Plug 'nvim-telescope/telescope.nvim'
 endif
 
@@ -1055,38 +1034,15 @@ endif
 
 
 
-set termguicolors
 " color scheme
-"set background=dark
-"colorscheme solarized
-"colorscheme wombat
-"colorscheme badwolf
-"colorscheme pyte
-"colorscheme jellybeans
-"colorscheme molokai
-"colorscheme codeschool
-"colorscheme Tomorrow-Night-Eighties
-"colorscheme onedark
-"color dracula
-"color neodark
-"colorscheme material-monokai
-" set background=dark
-" colorscheme PaperColor
-" ayu theme
-"let ayucolor="dark"
-"colorscheme ayu
-"
-" enfocado
-"colorscheme enfocado
-"let g:enfocado_style = 'nature' " Available: `nature` or `neon`.
-"let g:airline_theme = 'enfocado'
-set background=dark
-colorscheme palenight
-let g:airline_theme = "palenight"
-let g:palenight_terminal_italics=1
+set termguicolors
+let g:oceanic_next_terminal_bold = 1
+let g:oceanic_next_terminal_italic = 1
 if (has("termguicolors"))
   set termguicolors
 endif
+colorscheme OceanicNext
+let g:airline_theme = "oceanicnext"
 
 
 " load db definition
@@ -1095,4 +1051,3 @@ try
 catch
   " will silently ignore file-not-found error
 endtry 
-

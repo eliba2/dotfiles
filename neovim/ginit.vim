@@ -5,7 +5,8 @@ set mouse=a
 if exists(':GuiFont')
     " Use GuiFont! to ignore font errors
     "GuiFont {font_name}:h{size}
-    GuiFont Menlo:h13
+    "GuiFont Menlo:h13
+    GuiFont IBM Plex Mono:h16
 endif
 
 " Disable GUI Tabline
