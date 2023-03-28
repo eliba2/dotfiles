@@ -11,3 +11,6 @@ ln -s ${HOME}/.dotfiles/neovim/ginit.vim ${HOME}/.config/nvim/ginit.vim
 # kitty
 ln -s ${HOME}/.dotfiles/kitty/kitty.conf ${HOME}/.config/kitty/kitty.conf
 ln -s ${HOME}/.dotfiles/kitty/pager ${HOME}/.config/kitty/pager
+
+# phoenix (osx only, https://kasper.github.io/phoenix/)
+ln -s ${HOME}/.dotfiles/phoenix/phoenix.js ${HOME}/.phoenix.js
