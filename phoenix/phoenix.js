@@ -122,11 +122,18 @@ Key.on("k", ["ctrl", "shift"], async function (_, repeat) {
   activeOrCycle("kitty");
 });
 
-Key.on("l", ["ctrl", "shift"], async function (_, repeat) {
+Key.on(";", ["ctrl", "shift"], async function (_, repeat) {
   if (repeat) {
     return;
   }
   activeOrCycle("Google Chrome");
+});
+
+Key.on("l", ["ctrl", "shift"], async function (_, repeat) {
+  if (repeat) {
+    return;
+  }
+  activeOrCycle("Microsoft Edge");
 });
 
 Key.on("left", ["cmd"], () => {

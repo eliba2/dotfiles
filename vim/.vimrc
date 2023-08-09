@@ -299,9 +299,6 @@ endif
 " remove highlight
 nnoremap <C-h> :noh<CR>
 
-"add minus to word
-"set iskeyword+="-"
-
 " fzf
 set rtp+=/usr/local/opt/fzf
 let g:fzf_launcher = "~/bin/fzf-macvim.sh %s"
@@ -315,20 +312,19 @@ let $FZF_DEFAULT_COMMAND= 'ag -g "" --path-to-ignore ~/.config/ag/.ignore --sile
 " command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>,'--path-to-ignore ~/.config/ag/.ignore', {'options': '--delimiter : --nth 4..'}, <bang>0)
 command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>,'--path-to-ignore ~/.config/ag/.ignore --silent ', {'options': '--expect=ctrl-x,ctrl-v --delimiter : --nth 4 --multi --reverse --preview "~/.vim/plugged/fzf.vim/bin/preview.sh {}"'}, <bang>0)
 " note that alt-p will use RgFiles instead of default
-command! -bang -nargs=* Rg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --color=always --smart-case -- '.shellescape(<q-args>), 1,
-  \   fzf#vim#with_preview({'options': '--expect=ctrl-x,ctrl-v --delimiter : --nth 4 --multi --reverse'}), <bang>0)
-
-
 command! -bang -nargs=? -complete=dir Files
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
-nnoremap <M-e> :call fzf#vim#ag('.','--path-to-ignore ~/.config/ag/.ignore --silent ', {'options': '--expect=ctrl-x,ctrl-v --multi --reverse --preview "~/.vim/plugged/fzf.vim/bin/preview.sh {}" --query '.expand('<cword>')})<CR>
+" nnoremap <M-e> :call fzf#vim#ag('.','--path-to-ignore ~/.config/ag/.ignore --silent ', {'options': '--expect=ctrl-x,ctrl-v --multi --reverse --preview "~/.vim/plugged/fzf.vim/bin/preview.sh {}" --query '.expand('<cword>')})<CR>
 
-
-" nnoremap <M-e> :call fzf#vim#files('.', {'options':'--query '.expand('<cword>')})<CR>
-
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--disabled', '--query', a:query, '--bind', 'change:reload:'.reload_command, '--preview-window', '+{2}-10,~1']}
+  let spec = fzf#vim#with_preview(spec, 'right', 'ctrl-/')
+  call fzf#vim#grep(initial_command, 1, spec, a:fullscreen)
+endfunction
 
 """""""""""fzf in gloating window
 " Reverse the layout to make the FZF list top-down
@@ -349,7 +345,7 @@ function! FloatingFZF()
   " 90% of the height
   let height = float2nr(&lines * 0.9)
   " 80% of the height
-  let width = float2nr(&columns * 0.8)
+  let width = float2nr(&columns * 0.86)
   " horizontal position (centralized)
   let horizontal = float2nr((&columns - width) / 2)
   " vertical position (one line down of the top)
@@ -459,8 +455,10 @@ nnoremap <leader>gL :execute "Git log --patch -- ".expand('%p')<CR>
 " custom defined
 nnoremap <leader>gm :G blame<CR>
 nnoremap <leader>gb :G branch<CR>
+" for giffview
 nnoremap <leader>gg :DiffviewOpen<CR>
 nnoremap <leader>gG :DiffviewClose<CR>
+nnoremap <leader>g<c-G> :DiffviewOpen master<CR>
 
 
 
@@ -610,7 +608,30 @@ let g:javascript_conceal_arrow_function       = "?"
 let g:javascript_conceal_noarg_arrow_function = "??"
 let g:javascript_conceal_underscore_arrow_function = "??"
 
+" set nvim title: if its from ~/Development project, set it as the first
+" directory name, in big letters. Otherwise, set it as the full path
+function! SetNvimTitle(path)
+    if bufexists(a:path)
+      let home = expand('~')
+      let dev_dir = home.'/Development/'
 
+      if a:path =~# '^' . dev_dir
+          let dir = substitute(a:path, '^' . dev_dir, '', '')
+          let parts = split(dir, '/')
+          let title = toupper(parts[0])
+          if len(parts) > 1
+              let title =  parts[-1].' - '.title
+          endif
+      else
+          let parts = split(a:path, '/')
+          let title = parts[-1]
+      endif
+
+      return title
+    else
+      return 'nvim'
+    endif
+endfunction
 
 
 " set title to the current dir
@@ -618,12 +639,76 @@ if has("nvim")
 set title
 augroup dirchange
 autocmd!
-autocmd DirChanged * let &titlestring=v:event['cwd']
+autocmd DirChanged * let &titlestring=SetNvimTitle(v:event['cwd'])
+autocmd BufEnter * let &titlestring=SetNvimTitle(expand('%:p'))
 augroup END
 endif
 
 " blink the cursor
 set guicursor=n-ci:iCursor-blinkwait1200-blinkon800-blinkoff600
+
+
+" Open giyhub file directly from current one
+function! OpenGitHubFile()
+    function! s:GetDefaultBranch()
+        let l:default_branch = systemlist('gh repo view --json defaultBranchRef --jq .defaultBranchRef.name')[0]
+
+        " Extract the branch name from the full reference path
+        let l:default_branch = matchstr(l:default_branch, '\w\+$')
+
+        return l:default_branch
+    endfunction
+
+    function! s:GetRemoteBranches()
+        let l:remote_branches = systemlist('git branch --remote')
+
+        " Process the list to extract branch names
+        let l:branch_names = []
+        for branch in l:remote_branches
+            let l:branch_name = matchstr(branch, 'origin/\zs\w\+$')
+            if l:branch_name != ''
+                call add(l:branch_names, l:branch_name)
+            endif
+        endfor
+
+        return l:branch_names
+    endfunction
+
+    let l:current_file = expand('%:p')
+    let l:git_root_path = systemlist('git rev-parse --show-toplevel')[0]
+    
+    " Get the remote repository URL
+    let l:repo_url = systemlist('git remote get-url origin')[0]
+    
+    " Remove .git suffix from the URL if present
+    let l:repo_url = substitute(l:repo_url, 'git@github.com:', 'https://github.com/', '')
+    let l:repo_url = substitute(l:repo_url, '\.git', '', '')
+
+   " Get the current branch
+    let l:current_branch = trim(systemlist('git rev-parse --abbrev-ref HEAD')[0])
+
+   " Get the list of remote branches
+    let l:remote_branches = s:GetRemoteBranches()
+    
+    " Check if the current branch exists remotely, otherwise use the default branch
+    let l:branch_exists = index(l:remote_branches, l:current_branch) != -1
+    if l:branch_exists
+        let l:target_branch = l:current_branch
+    else
+        " Fallback to the default branch
+        let l:default_branch = s:GetDefaultBranch()
+        let l:target_branch = l:default_branch != '' ? l:default_branch : 'main'
+    endif
+    
+    " Construct the GitHub file URL
+    let l:relative_path = substitute(l:current_file, '^' . escape(l:git_root_path, '\'), '', '')
+    let l:github_file_url = l:repo_url . '/blob/' . l:target_branch . l:relative_path
+
+    call system('open ' . shellescape(l:github_file_url))
+endfunction
+
+nnoremap <leader>gh :call OpenGitHubFile()<CR>
+
 
 
 " vim-node-inspect
@@ -810,6 +895,10 @@ nnoremap _X  :put =system(getline('.'))<cr>
 vnoremap _X  :<C-U>'>put =system(join(getline('''<','''>'),\"\n\").\"\n\")<cr>
 
 
+" copilot, use ctrl+tab instead of tab
+imap <silent><script><expr> <s-tab> copilot#Accept("\<CR>")
+let g:copilot_no_tab_map = v:true
+
 " global status line, mvim only
 if has("nvim")
   set laststatus=3
@@ -995,8 +1084,11 @@ Plug 'eliba2/vim-node-inspect'
 " typescript
 "Plug 'leafgarland/typescript-vim'
 
-" codex integration
-Plug 'tom-doerr/vim_codex'
+" git messanger
+Plug 'rhysd/git-messenger.vim' 
+
+" co pilot
+Plug 'github/copilot.vim'
 
 
 if has("nvim")
@@ -1030,6 +1122,13 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 EOF
+
+" highlight yank, neovim-only
+augroup highlight_yank
+    autocmd!
+    au TextYankPost * silent! lua vim.highlight.on_yank{higroup="IncSearch", timeout=300}
+augroup END
+
 endif
 
 
