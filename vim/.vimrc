@@ -159,16 +159,29 @@ nnoremap <D-e> :call SearchText(0)<CR>
 vnoremap <D-e> :call SearchText(1)<CR>
 
 
+"nmap     <Leader>f <Plug>CtrlSFPrompt
+"vmap     <Leader>f <Plug>CtrlSFVwordPath
+"vmap     <Leader>fF <Plug>CtrlSFVwordExec
+"nmap     <Leader>fn <Plug>CtrlSFCwordPath
+"nmap     <Leader>fp <Plug>CtrlSFPwordPath
+"nnoremap <Leader>fo :CtrlSFOpen<CR>
+"nnoremap <Leader>ft :CtrlSFToggle<CR>
+"inoremap <Leader>ft <Esc>:CtrlSFToggle<CR>
+
+
 nnoremap <Leader>s :CtrlSF<Space>
 nnoremap <Leader>x :CtrlSFToggle<CR>
 "let g:ctrlsf_auto_close = 0
 let g:ctrlsf_position = 'right'
-let g:ctrlsf_backend = 'ag'
+let g:ctrlsf_backend = 'rg'
 let g:ctrlsf_open_left = 1
 
 let g:ctrlsf_extra_backend_args = {
-    \ 'ag': '--path-to-ignore ~/.config/ag/.ignore'
+    \ 'rg': '--ignore-file ~/.config/ag/.ignore'
     \ }
+"let g:ctrlsf_extra_backend_args = {
+    "\ 'ag': '--path-to-ignore ~/.config/ag/.ignore'
+    "\ }
 " not working??
 let g:ctrlsf_auto_focus = {
     \ "at": "start"
@@ -302,6 +315,8 @@ nnoremap <C-h> :noh<CR>
 " fzf
 set rtp+=/usr/local/opt/fzf
 let g:fzf_launcher = "~/bin/fzf-macvim.sh %s"
+" allow pasting (c-r *)
+autocmd! FileType fzf tnoremap <expr> <C-r> getreg(nr2char(getchar()))
 " mapping moved to gvimrc
 "nnoremap <c-p> :FZF<cr>
 " moved to rg
@@ -315,13 +330,17 @@ command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>,'--path-to-ignore ~/.config/
 command! -bang -nargs=? -complete=dir Files
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep("rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}), <bang>0)
+
 " nnoremap <M-e> :call fzf#vim#ag('.','--path-to-ignore ~/.config/ag/.ignore --silent ', {'options': '--expect=ctrl-x,ctrl-v --multi --reverse --preview "~/.vim/plugged/fzf.vim/bin/preview.sh {}" --query '.expand('<cword>')})<CR>
 
 function! RipgrepFzf(query, fullscreen)
   let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case -- %s || true'
   let initial_command = printf(command_fmt, shellescape(a:query))
   let reload_command = printf(command_fmt, '{q}')
-  let spec = {'options': ['--disabled', '--query', a:query, '--bind', 'change:reload:'.reload_command, '--preview-window', '+{2}-10,~1']}
+  let spec = {'options': ['--disabled', '--query', a:query, '--bind', 'change:reload:'.reload_command, '--preview-window', '+{2}-10,~1', '--delimiter : --nth 4..']}
   let spec = fzf#vim#with_preview(spec, 'right', 'ctrl-/')
   call fzf#vim#grep(initial_command, 1, spec, a:fullscreen)
 endfunction
@@ -1142,7 +1161,6 @@ if (has("termguicolors"))
 endif
 colorscheme OceanicNext
 let g:airline_theme = "oceanicnext"
-
 
 " load db definition
 try 
