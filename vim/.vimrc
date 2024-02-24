@@ -440,6 +440,32 @@ function! OpenBottomTerminal()
     bo new split
     terminal
 endfunction
+
+function! OpenOrReuseBottomTerminal()
+    " Get the list of buffers
+    redir => bufferlist
+    silent exec 'ls'
+    redir END
+    " Split the list into lines
+    let lines = split(bufferlist, "\n")
+    " Search for the terminal buffer
+    for line in lines
+        if line =~ 'term://'
+            " Extract the buffer number
+            let bufnr = matchstr(line, '^\s*\zs\d\+')
+            echo "Reusing terminal"
+            " Open the terminal buffer in a horizontal split at the bottom
+            exec 'botright split | buffer' bufnr
+            return
+        endif
+    endfor
+    " If no terminal buffer is found
+    echo "Opening new terminal"
+    call OpenBottomTerminal()
+endfunction
+
+
+
 " exit terminal mode
 tnoremap jj <C-\><C-n>
 " move between windows in terminal mode
@@ -448,7 +474,11 @@ tnoremap <A-j> <C-\><C-N><C-w>j
 tnoremap <A-k> <C-\><C-N><C-w>k
 tnoremap <A-l> <C-\><C-N><C-w>l
 " leader - y to open terminal
-nnoremap <leader>y :call OpenBottomTerminal()<CR>
+nnoremap <leader>y :call OpenOrReuseBottomTerminal()<CR>
+" D-r insteaf of c-r in terminal mode
+tnoremap <expr> <D-r> '<C-\><C-N>"'.nr2char(getchar()).'pi'
+" make cursor visible when not in insert mode
+exec 'hi! TermCursorNC ctermfg=15 guifg=#fdf6e3 ctermbg=14 guibg=#93a1a1 cterm=NONE gui=NONE'
 
 " autocmd FileType fzf tnoremap <ESC> :q<CR>
 
@@ -839,8 +869,8 @@ noremap <c-j> 5j
 "nnoremap <leader>fb <cmd>Telescope buffers<cr>
 "nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
-" emmet additiona snippets
-let g:user_emmet_settings = json_decode(join(readfile(expand('~/.config/emmet/snippets.json')), "\n"))
+" emmet additiona snippets: need to create
+" let g:user_emmet_settings = json_decode(join(readfile(expand('~/.config/emmet/snippets.json')), "\n"))
 
 
 function! ToggleQuotes()
@@ -914,14 +944,34 @@ nnoremap _X  :put =system(getline('.'))<cr>
 vnoremap _X  :<C-U>'>put =system(join(getline('''<','''>'),\"\n\").\"\n\")<cr>
 
 
-" copilot, use ctrl+tab instead of tab
-imap <silent><script><expr> <s-tab> copilot#Accept("\<CR>")
-let g:copilot_no_tab_map = v:true
+" copilot, use shift+tab instead of tab
+"imap <silent><script><expr> <s-tab> copilot#Accept("\<CR>")
+"let g:copilot_no_tab_map = v:true
+
+" codium, use shift+tab instead of tab
+let g:codeium_no_map_tab = 1
+imap <script><silent><nowait><expr> <S-tab> codeium#Accept()
+
 
 " global status line, mvim only
 if has("nvim")
   set laststatus=3
 endif
+
+" Zoom / Restore window.
+function! s:ZoomToggle() abort
+    if exists('t:zoomed') && t:zoomed
+        execute t:zoom_winrestcmd
+        let t:zoomed = 0
+    else
+        let t:zoom_winrestcmd = winrestcmd()
+        resize
+        vertical resize
+        let t:zoomed = 1
+    endif
+endfunction
+command! ZoomToggle call s:ZoomToggle()
+nnoremap <silent> <C-A> :ZoomToggle<CR>
 
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
@@ -1106,8 +1156,24 @@ Plug 'eliba2/vim-node-inspect'
 " git messanger
 Plug 'rhysd/git-messenger.vim' 
 
+"""""" Code eompletion engines
 " co pilot
-Plug 'github/copilot.vim'
+" disabled: no license
+" Plug 'github/copilot.vim'
+
+""if has("nvim")
+  " cody
+  ""Plug 'sourcegraph/sg.nvim', { 'do': 'nvim -l build/init.lua' }
+  " Required for various utilities - note this is already added above
+  " Plug 'nvim-lua/plenary.nvim'
+  " Required if you want to use some of the search functionality
+  "Plug 'nvim-telescope/telescope.nvim'Plug 'nvim-telescope/telescope.nvim'
+""endif
+
+Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
+
+"""""" End of code completion engines
+
 
 
 if has("nvim")
@@ -1116,7 +1182,6 @@ if has("nvim")
   Plug 'nvim-treesitter/playground'
   " telescope. fzf alike
   "Plug 'nvim-lua/plenary.nvim " penary is already added used by diffview
-  "Plug 'nvim-telescope/telescope.nvim'
 endif
 
 " Initialize pugin system
@@ -1161,6 +1226,13 @@ if (has("termguicolors"))
 endif
 colorscheme OceanicNext
 let g:airline_theme = "oceanicnext"
+
+" Cody setup. needs to be late
+"lua <<EOF
+  "require('sg').setup({
+    "enable_cody = true,
+  "})
+"EOF
 
 " load db definition
 try 
