@@ -1,8 +1,17 @@
 const LEFT = 0;
 const RIGHT = 1;
 
-const activeOrCycle = (appName) => {
-  const allAppInstances = App.all().filter((s) => s.name() === appName);
+const activeOrCycle = (appName, notInstalled=false) => {
+  const allAppInstancesNonFiltered = App.all().filter((s) => s.name() === appName);
+  // searching for only non-hidden apps
+  const allAppInstances = allAppInstancesNonFiltered.filter((appInstance) => {
+    // Get all windows for the current app instance
+    const windows = appInstance.windows();
+
+    // Check if any window is not minimized
+    return windows.some((window) => !window.isMinimized());
+  });
+
   let app;
   if (allAppInstances.length === 1) {
     app = allAppInstances[0];
@@ -66,7 +75,12 @@ const activeOrCycle = (appName) => {
           appCycleNum = 0;
         }
         Storage.set(key, appCycleNum);
-        allAppInstances[appCycleNum].windows()[0].focus();
+        if (notInstalled) {
+          allAppInstances[appCycleNum].windows()[0].focus();
+        }
+        else {
+          app.windows()[appCycleNum].focus();
+        }
       } else {
         app.windows()[0].focus();
       }
@@ -112,7 +126,7 @@ Key.on("j", ["ctrl", "shift"], async function (_, repeat) {
   if (repeat) {
     return;
   }
-  activeOrCycle("Neovim");
+  activeOrCycle("Neovim", true);
 });
 
 Key.on("k", ["ctrl", "shift"], async function (_, repeat) {
