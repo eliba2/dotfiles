@@ -1,6 +1,8 @@
 const LEFT = 0;
 const RIGHT = 1;
 
+// NOTE - to debug use "log stream --process Phoenix"
+
 const activeOrCycle = (appName, notInstalled=false) => {
   const allAppInstancesNonFiltered = App.all().filter((s) => s.name() === appName);
   // searching for only non-hidden apps
