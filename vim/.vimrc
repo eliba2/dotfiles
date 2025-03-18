@@ -761,16 +761,16 @@ nnoremap <leader>gh :call OpenGitHubFile()<CR>
 
 
 " vim-node-inspect
-nnoremap <F3> :NodeInspectStart<cr>
-nnoremap <F5> :NodeInspectRun<cr>
-nnoremap <F4> :NodeInspectConnect("127.0.0.1:7000")<cr>
-nnoremap <F8> :NodeInspectStepOver<cr>
-nnoremap <F7> :NodeInspectStepInto<cr>
-nnoremap <F10> :NodeInspectStepOut<cr>
-nnoremap <F2> :NodeInspectStop<cr>
-nnoremap <F9> :NodeInspectToggleBreakpoint<cr>
-nnoremap <f6> :NodeInspectRemoveAllBreakpoints<cr>
-nnoremap <f12> :NodeInspectToggleWindow<cr>
+nnoremap <silent><leader>dd :NodeInspectStart<cr>
+nnoremap <silent><leader>dr :NodeInspectRun<cr>
+nnoremap <silent><leader>dc :NodeInspectConnect("127.0.0.1:9229")<cr>
+nnoremap <silent><leader>ds :NodeInspectStepOver<cr>
+nnoremap <silent><leader>di :NodeInspectStepInto<cr>
+nnoremap <silent><leader>do :NodeInspectStepOut<cr>
+nnoremap <silent><leader>dq :NodeInspectStop<cr>
+nnoremap <silent><leader>db :NodeInspectToggleBreakpoint<cr>
+nnoremap <silent><leader>da :NodeInspectRemoveAllBreakpoints<cr>
+nnoremap <silent><leader>dw :NodeInspectToggleWindow<cr>
 
 let g:nodeinspect_window_pos = 'right'
 let g:nodeinspect_auto_watch = 1
@@ -948,7 +948,7 @@ vnoremap _X  :<C-U>'>put =system(join(getline('''<','''>'),\"\n\").\"\n\")<cr>
 "imap <silent><script><expr> <s-tab> copilot#Accept("\<CR>")
 "let g:copilot_no_tab_map = v:true
 
-" codium, use shift+tab instead of tab
+" codeium, use shift+tab instead of tab
 let g:codeium_no_map_tab = 1
 imap <script><silent><nowait><expr> <S-tab> codeium#Accept()
 
@@ -1169,8 +1169,9 @@ Plug 'rhysd/git-messenger.vim'
   " Required if you want to use some of the search functionality
   "Plug 'nvim-telescope/telescope.nvim'Plug 'nvim-telescope/telescope.nvim'
 ""endif
-
-Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
+if has("nvim")
+  Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
+endif
 
 """""" End of code completion engines
 
