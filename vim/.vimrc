@@ -114,6 +114,34 @@ noremap <leader>rx :call RangeJsxBeautify()<CR>
 noremap <leader>rs :call RangeCSSBeautify()<CR>
 
 
+set clipboard+=unnamedplus
+
+if has("nvim")
+  map <D-p> :Files<CR>
+  map <D-;> :Rg<CR>
+  map <D-/> :BLines<CR>
+  map <D-'> :BTags<CR>
+  map <D-i> :Buffers<CR>
+  map <D-1> :History<CR>
+  map <D-2> :Marks<CR>
+  map <D-3> :GFiles?<CR>
+  map <D-b> :NERDTreeToggle<CR>
+  map <D-l> :NERDTreeFind<CR>
+  map <D-j> :m +1<CR>
+  map <D-k> :m -2<CR>
+  map <D-t> :tabnew<CR>
+  noremap <D-y> :27 split<CR><C-w><C-w> :term<CR><ESC>i
+  " ctrl-s save
+  noremap <silent> <D-s> :update<CR><ESC>
+  vnoremap <silent> <D-s> <C-C>:update<CR><ESC>
+  inoremap <silent> <D-s> <C-O>:update<CR><ESC>
+  " ctrl-tab switch tab
+  noremap <c-tab> gt
+  vnoremap <c-tab> <C-C>gt
+  inoremap <c-tab> <C-O>gt
+endif
+
+
 
 " eb searching / highlight search
 set incsearch
@@ -130,9 +158,8 @@ set inccommand=split
 endif
 
 " copy (also) 2 clipboard
-set clipboard=unnamed
-"set clipboard+=unnamedplus
-"
+" set clipboard=unnamed
+
 " copy to clipboard with xclip
 vnoremap <silent> <Leader>y :w !xclip -i -sel c<CR><CR>
 
@@ -413,7 +440,7 @@ autocmd FileType nerdtree nnoremap <buffer> <silent> <c-j> 5j
 let g:UltiSnipsExpandTrigger="<C-9>"
 
 " auto pairs no shortcuts (no meta)
-let g:AutoPairsShortcutToggle=''
+" let g:AutoPairsShortcutToggle=''
 
 
 " startify
@@ -1050,7 +1077,8 @@ nnoremap <C-G>       :!whisper.nvim<CR>:let @a = system("cat /tmp/whisper.nvim \
 vnoremap <C-G> c<C-O>:!whisper.nvim<CR><C-O>:let @a = system("cat /tmp/whisper.nvim \| tail -n 1 \| xargs -0 \| tr -d '\\n' \| sed -e 's/^[[:space:]]*//'")<CR><C-R>a
 
 
-
+" image paste
+nnoremap <leader>p :PasteImage<CR>
 
 
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
@@ -1292,6 +1320,9 @@ if has("nvim")
   Plug 'nvim-treesitter/playground'
   " telescope. fzf alike
   "Plug 'nvim-lua/plenary.nvim " penary is already added used by diffview
+
+  " line idention, nvim only
+  Plug 'lukas-reineke/indent-blankline.nvim'
 endif
 
 " Initialize pugin system
@@ -1301,16 +1332,19 @@ call plug#end()
 
 
 
-
-
-
-
-
-
-
 " nvim specific configs
 if has("nvim")
 
+lua << EOF
+  require("img-clip").setup({});
+EOF
+
+lua << EOF
+
+  -- indent-blankline
+  require("ibl").setup() 
+
+EOF
 
 " highlight yank, neovim-only
 augroup highlight_yank
@@ -1370,13 +1404,13 @@ lua << EOF
 require('avante_lib').load()
 require('avante').setup({
   provider = "gemini", -- Recommend using Claude
----  auto_suggestions_provider = "claude",
----  claude = {
----    endpoint = "https://api.anthropic.com",
----    model = "claude-3-5-sonnet-20241022",
----    temperature = 0,
----    max_tokens = 4096,
----  },
+  gemini = {
+    endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+    model = "gemini-2.5-pro-exp-03-25",
+    timeout = 30000, -- Timeout in milliseconds
+    temperature = 0,
+    max_tokens = 8192,
+  },
   dual_boost = {
     enabled = false,
     first_provider = "openai",
