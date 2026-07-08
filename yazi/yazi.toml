@@ -1,0 +1,19 @@
+[opener]
+visidata = [
+  { run = 'vd "$@"', block = true, for = "unix" },
+]
+onlyoffice = [
+  { run = 'open -a "ONLYOFFICE" "$@"', orphan = true, desc = "OnlyOffice", for = "macos" },
+]
+
+[open]
+prepend_rules = [
+  { url = "*.csv", use = ["visidata", "edit", "reveal"] },
+  { url = "*.json", use = ["visidata", "edit", "reveal"] },
+  { url = "*.xlsx", use = ["onlyoffice", "visidata", "reveal"] },
+  { url = "*.xlsm", use = ["onlyoffice", "visidata", "reveal"] },
+]
+
+[mgr]
+sort_by = "mtime"
+sort_reverse = true

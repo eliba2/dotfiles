@@ -1,0 +1,10 @@
+# Phoenix equivalents using yabai
+# Reload skhd after changes: skhd --reload
+
+ctrl + shift - j : /Users/elibabila/.dotfiles/phoenix/phoenix_yabai.sh cycle-app "Neovim"
+ctrl + shift - k : /Users/elibabila/.dotfiles/phoenix/phoenix_yabai.sh cycle-app "kitty"
+ctrl + shift - l : /Users/elibabila/.dotfiles/phoenix/phoenix_yabai.sh cycle-app "Google Chrome"
+
+cmd - left : /Users/elibabila/.dotfiles/phoenix/phoenix_yabai.sh move-left
+cmd - right : /Users/elibabila/.dotfiles/phoenix/phoenix_yabai.sh move-right
+cmd - up : /Users/elibabila/.dotfiles/phoenix/phoenix_yabai.sh maximize

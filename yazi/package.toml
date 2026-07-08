@@ -1,0 +1,17 @@
+[[plugin.deps]]
+use = "dedukun/bookmarks"
+rev = "9ef1254"
+hash = "92fbb5483657fa7976cdf4e0104e18e0"
+
+[[plugin.deps]]
+use = "Reledia/glow"
+rev = "bd3eaa5"
+hash = "92b5c58159a51c567f82b618cee2b78"
+
+[[plugin.deps]]
+use = "Rolv-Apneseth/starship"
+rev = "159eaba"
+hash = "7de446280b1ba8c49ffd86dbc24bbbe6"
+
+[flavor]
+deps = []

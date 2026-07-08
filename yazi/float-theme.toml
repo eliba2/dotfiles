@@ -1,0 +1,5 @@
+# Floating-window-only theme (this dir is used via YAZI_CONFIG_HOME for the
+# Phoenix Cmd-; yazi; the terminal yazi keeps its default theme).
+[flavor]
+dark  = "rose-pine-dawn"
+light = "rose-pine-dawn"

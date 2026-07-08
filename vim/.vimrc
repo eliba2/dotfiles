@@ -535,6 +535,8 @@ nnoremap <leader>gb :G branch<CR>
 nnoremap <leader>gg :DiffviewOpen<CR>
 nnoremap <leader>gG :DiffviewClose<CR>
 nnoremap <leader>g<c-G> :DiffviewOpen master<CR>
+nnoremap <leader>gf :DiffviewFileHistory %<CR>
+nnoremap <leader>gF :DiffviewFileHistory<CR>
 
 
 
@@ -620,6 +622,26 @@ endfunction
 command! -nargs=0 Prettier :CocCommand prettier.formatFile
 command! -nargs=0 Eslint :CocCommand eslint.executeAutofix
 
+" oxfmt â€” format current buffer via the project's own oxfmt binary.
+" coc-oxc exposes no 'format file' command, and CocAction('format') is ambiguous
+" when coc-prettier is also registered, so we run the project oxfmt directly.
+command! -nargs=0 Oxfmt :call RunOxfmt()
+function! RunOxfmt() abort
+  let l:bin = findfile('node_modules/.bin/oxfmt', expand('%:p:h') . ';')
+  let l:exe = empty(l:bin) ? 'oxfmt' : fnamemodify(l:bin, ':p')
+  let l:view = winsaveview()
+  let l:out = systemlist(shellescape(l:exe) . ' --stdin-filepath=' . shellescape(expand('%:p')), join(getline(1, '$'), "\n"))
+  if v:shell_error
+    echohl ErrorMsg | echo 'Oxfmt failed: ' . join(l:out, ' ') | echohl None
+    return
+  endif
+  call setline(1, l:out)
+  if line('$') > len(l:out)
+    silent execute (len(l:out) + 1) . ',$delete _'
+  endif
+  call winrestview(l:view)
+endfunction
+
 " Highlight the symbol and its references when holding the cursor.
 autocmd CursorHold * silent call CocActionAsync('highlight')
 
@@ -671,15 +693,15 @@ let g:indentLine_setConceal = 0
 
 
 " conceal for javascript-vim plugin
-let g:javascript_conceal_function             = "Ä"
-let g:javascript_conceal_null                 = "¿"
+let g:javascript_conceal_function             = "ï¿½"
+let g:javascript_conceal_null                 = "ï¿½"
 let g:javascript_conceal_this                 = "@"
 let g:javascript_conceal_return               = "?"
-let g:javascript_conceal_undefined            = "À"
+let g:javascript_conceal_undefined            = "ï¿½"
 let g:javascript_conceal_NaN                  = "?"
-let g:javascript_conceal_prototype            = "¦"
-let g:javascript_conceal_static               = "¥"
-let g:javascript_conceal_super                = "½"
+let g:javascript_conceal_prototype            = "ï¿½"
+let g:javascript_conceal_static               = "ï¿½"
+let g:javascript_conceal_super                = "ï¿½"
 let g:javascript_conceal_arrow_function       = "?"
 let g:javascript_conceal_noarg_arrow_function = "??"
 let g:javascript_conceal_underscore_arrow_function = "??"
@@ -788,16 +810,16 @@ nnoremap <leader>gh :call OpenGitHubFile()<CR>
 
 
 " vim-node-inspect
-nnoremap <silent><leader>dd :NodeInspectStart<cr>
-nnoremap <silent><leader>dr :NodeInspectRun<cr>
-nnoremap <silent><leader>dc :NodeInspectConnect("127.0.0.1:9229")<cr>
-nnoremap <silent><leader>ds :NodeInspectStepOver<cr>
-nnoremap <silent><leader>di :NodeInspectStepInto<cr>
-nnoremap <silent><leader>do :NodeInspectStepOut<cr>
-nnoremap <silent><leader>dq :NodeInspectStop<cr>
-nnoremap <silent><leader>db :NodeInspectToggleBreakpoint<cr>
-nnoremap <silent><leader>da :NodeInspectRemoveAllBreakpoints<cr>
-nnoremap <silent><leader>dw :NodeInspectToggleWindow<cr>
+"nnoremap <silent><leader>dd :NodeInspectStart<cr>
+"nnoremap <silent><leader>dr :NodeInspectRun<cr>
+"nnoremap <silent><leader>dc :NodeInspectConnect("127.0.0.1:9229")<cr>
+"nnoremap <silent><leader>ds :NodeInspectStepOver<cr>
+"nnoremap <silent><leader>di :NodeInspectStepInto<cr>
+"nnoremap <silent><leader>do :NodeInspectStepOut<cr>
+"nnoremap <silent><leader>dq :NodeInspectStop<cr>
+"nnoremap <silent><leader>db :NodeInspectToggleBreakpoint<cr>
+"nnoremap <silent><leader>da :NodeInspectRemoveAllBreakpoints<cr>
+"nnoremap <silent><leader>dw :NodeInspectToggleWindow<cr>
 
 let g:nodeinspect_window_pos = 'right'
 let g:nodeinspect_auto_watch = 1
@@ -941,7 +963,10 @@ let g:db_ui_win_position = 'right'
 " javascript tooling
 nnoremap <c-p> :Prettier<CR>
 nnoremap <c-0> :Eslint<CR>
+nnoremap <c-9> :Oxfmt<CR>
 nnoremap <c-a> <Plug>(coc-codeaction)
+nnoremap <silent> <C-S-p> :call CocActionAsync('format')<CR>
+ xnoremap <silent> <C-S-i> :call CocActionAsync('formatSelected', visualmode())<CR>
 
 " increase/decrese gui font
 " idea from https://www.vim.org/scripts/script.php?script_id=2321
@@ -983,8 +1008,8 @@ vnoremap _X  :<C-U>'>put =system(join(getline('''<','''>'),\"\n\").\"\n\")<cr>
 
 
 " copilot, use shift+tab instead of tab
-imap <silent><script><expr> <s-tab> copilot#Accept("\<CR>")
-let g:copilot_no_tab_map = v:true
+"imap <silent><script><expr> <s-tab> copilot#Accept("\<CR>")
+"let g:copilot_no_tab_map = v:true
 
 " codeium, use shift+tab instead of tab
 "let g:codeium_no_map_tab = 1
@@ -1080,6 +1105,20 @@ vnoremap <C-G> c<C-O>:!whisper.nvim<CR><C-O>:let @a = system("cat /tmp/whisper.n
 " image paste
 nnoremap <leader>p :PasteImage<CR>
 
+" code codecompanion
+nnoremap <leader>va :CodeCompanionActions<CR>
+vnoremap <leader>va :CodeCompanionActions<CR>
+nnoremap <leader>vc :CodeCompanionChat Toggle<CR>
+vnoremap <leader>vc :CodeCompanionChat Toggle<CR>
+
+
+" highlight yank, neovim-only
+augroup highlight_yank
+    autocmd!
+    au TextYankPost * silent! lua vim.highlight.on_yank{higroup="IncSearch", timeout=300}
+augroup END
+
+
 
 " Specify a direcory for plugins (for Neovim: ~/.local/share/nvim/plugged)
 call plug#begin('~/.vim/plugged')
@@ -1094,17 +1133,6 @@ Plug 'airblade/vim-gitgutter'
 " diff alternative (two repos), used for prs - replaced merginal
 Plug 'nvim-lua/plenary.nvim'
 Plug 'sindrets/diffview.nvim'
-
-"if has("nvim")
-  " the framework (complete)
-  "Plug 'roxma/nvim-completion-manager'
-  " php
-  "Plug 'roxma/LanguageServer-php-neovim',  {'do': 'composer install && composer run-script parse-stubs'}
-  " css
-  "Plug 'calebeby/ncm-css'
-  " javascript
-  "Plug 'roxma/nvim-cm-tern',  {'do': 'npm install'}
-"endif
 
 " completion manager (like vsc)
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
@@ -1128,88 +1156,32 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 
 
 " color schemes
-" Plug 'dracula/vim', { 'as': 'dracula' }
-" Plug 'KeitaNakamura/neodark.vim'
-" Plug 'joshdick/onedark.vim'
-"Plug 'wuelnerdotexe/vim-enfocado'
-"Plug 'drewtempelmeyer/palenight.vim'
-" Plug 'mhartington/oceanic-next'
-"Plug 'folke/tokyonight.nvim'
-"Plug 'cocopon/iceberg.vim'
-" Plug 'jacoborus/tender.vim'
-" Plug 'ayu-theme/ayu-vim'
 if has("nvim")
   Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
+
 endif
+Plug '/Users/elibabila/Tests/nvim-alien-blood'
+Plug '/Users/elibabila/Tests/iterm-1984-nvim'
+Plug 'NLKNguyen/papercolor-theme'
+
+" auto dark mode plugin
+Plug 'f-person/auto-dark-mode.nvim'
 
 Plug 'dyng/ctrlsf.vim'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
-"Plug 'xolox/vim-easytags'
-"Plug 'xolox/vim-misc'
-" tags generation
-" Plug 'ludovicchabant/vim-gutentags'
-" jsctags (and others support for gutentags
-" Plug 'tkonolige/ctags-shim'
-
-"Plug 'sjl/gundo.vim' " undo tree visualiser
-
-" Plug 'sheerun/vim-polyglot' " language syntax/ident
 Plug 'mhinz/vim-startify'
-
-" Plug 'tomtom/tcomment_vim'
 
 Plug 'scrooloose/nerdcommenter'
 
-"Plug 'Valloric/YouCompleteMe'
-
-"Plug 'cohama/lexima.vim'
-
-"Plug 'qpkorr/vim-bufkill'
-
-
-" Plug 'dense-analysis/ale'
-
-" Plug 'cskeeters/vim-smooth-scroll'
-
-" Plug 'pangloss/vim-javascript'
-" this sets the filetype to javascript.jsx which breaks completion plugins
-" Plug 'mxw/vim-jsx'
-" Plug 'elzr/vim-json'
-
 Plug 'mattn/emmet-vim'
-
-" ES2015 code snippets
-" Plug 'epilande/vim-es2015-snippets'
-" React code snippets
-" Plug 'epilande/vim-react-snippets'
-" Ultisnips
-" Plug 'SirVer/ultisnips'
-
-" ident lines
-"Plug 'Yggdroot/indentLine'
-
-" vim-esearch
-" Plug 'eugen0329/vim-esearch'
 
 " multiple cursors
 Plug 'terryma/vim-multiple-cursors'
 
 " surround
 Plug 'tpope/vim-surround'
-
-" node navigation
-Plug 'moll/vim-node'
-
-" auto brackets
-" Plug 'jiangmiao/auto-pairs'
-
-" auto brackets 2
-" Plug 'rstacruz/vim-closer'
-
-" Icons
-"Plug 'ryanoasis/vim-devicons'
 
 " marks on left line
 Plug 'kshenoy/vim-signature'
@@ -1220,9 +1192,6 @@ Plug 'maksimr/vim-jsbeautify'
 " as is (colortheme)
 " Plug 'NLKNguyen/papercolor-theme'
 
-
-" static code analysis
-" Plug 'vim-syntastic/syntastic'
 
 " rest console
 Plug 'diepm/vim-rest-console'
@@ -1237,31 +1206,19 @@ Plug 'kristijanhusak/vim-dadbod-ui'
 "pgp
 Plug 'jamessan/vim-gnupg'
 
-" git blame (not found in others...)
-" Plug 'zivyangll/git-blame.vim'
-
-" complete html
-" Plug 'alvan/vim-closetag'
-
-" find project root
-" Plug 'dbakker/vim-projectroot'
-
-" match html tag
-" Plug 'gregsexton/MatchTag'
-
-" change root project according to...
-" Plug 'airblade/vim-rooter'
-
-" language server protocol
-" Plug 'autozimu/LanguageClient-neovim', {
-"     \ 'branch': 'next',
-"     \ 'do': 'bash install.sh',
-"     \ }
-
-" Plug 'vim-hexokinase' " color inline. need to check which plugin does it currently before enabling
-
 " the best node-debugger in the world
 Plug 'eliba2/vim-node-inspect'
+
+" nvim-dap, another debugger, with UI
+if has("nvim")
+  " debugger
+  Plug 'mfussenegger/nvim-dap'
+  " python adapter
+  Plug 'mfussenegger/nvim-dap-python'
+  " UI
+  Plug 'nvim-neotest/nvim-nio'
+  Plug 'rcarriga/nvim-dap-ui'
+endif
 
 " typescript
 "Plug 'leafgarland/typescript-vim'
@@ -1272,7 +1229,7 @@ Plug 'rhysd/git-messenger.vim'
 """""" Code eompletion engines
 " co pilot
 " disabled: no license
-Plug 'github/copilot.vim'
+"Plug 'github/copilot.vim'
 
 " avante.nvim
 Plug 'stevearc/dressing.nvim'
@@ -1280,44 +1237,35 @@ Plug 'stevearc/dressing.nvim'
 Plug 'MunifTanjim/nui.nvim'
 Plug 'MeanderingProgrammer/render-markdown.nvim'
 
-" Optional deps
+"" Optional deps
 Plug 'hrsh7th/nvim-cmp'
 Plug 'nvim-tree/nvim-web-devicons' "or Plug 'echasnovski/mini.icons'
-Plug 'HakonHarnes/img-clip.nvim'
+"Plug 'HakonHarnes/img-clip.nvim'
 Plug 'zbirenbaum/copilot.lua'
 
-" Yay, pass source=true if you want to build from source
+"" Yay, pass source=true if you want to build from source
 Plug 'yetone/avante.nvim', { 'branch': 'main', 'do': 'make' }
-
-" co pilot chat
-" if has("nvim")
-  "" Plug 'nvim-lua/plenary.nvim' " already installed
-  " Plug 'CopilotC-Nvim/CopilotChat.nvim'
-" endif
-
-""if has("nvim")
-  " cody
-  ""Plug 'sourcegraph/sg.nvim', { 'do': 'nvim -l build/init.lua' }
-  " Required for various utilities - note this is already added above
-  " Plug 'nvim-lua/plenary.nvim'
-  " Required if you want to use some of the search functionality
-  "Plug 'nvim-telescope/telescope.nvim'Plug 'nvim-telescope/telescope.nvim'
-""endif
-" not used at nsure
 
 "if has("nvim")
 "  Plug 'Exafunction/codeium.vim', { 'branch': 'main' }
 "endif
-" Plug 'huggingface/llm.nvim'
 
 """""" End of code completion engines
+
+Plug 'HakonHarnes/img-clip.nvim'
+
+if has("nvim")
+  " Plug 'nvim-lua/plenary.nvim' // already added
+  " Plug 'nvim-treesitter/nvim-treesitter' // already added
+  Plug 'olimorris/codecompanion.nvim'
+endif
 
 
 
 if has("nvim")
   " treesitting
   Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-  Plug 'nvim-treesitter/playground'
+  " Plug 'nvim-treesitter/playground'
   " telescope. fzf alike
   "Plug 'nvim-lua/plenary.nvim " penary is already added used by diffview
 
@@ -1334,82 +1282,102 @@ call plug#end()
 
 " nvim specific configs
 if has("nvim")
-
 lua << EOF
+
+  require("dapui").setup()
+  require("dap-python").setup("uv")
+
+  local dap = require('dap')
+  dap.adapters.python = {
+    type = 'executable',
+    command = 'python',
+    args = { '-m', 'debugpy.adapter' },
+  }
+
+  dap.configurations.python = {
+    {
+      type = 'python',
+      request = 'launch',
+      name = 'Launch main',
+      module = "main",
+      console = "integratedTerminal"
+    },
+    {
+      type = 'python',
+      request = 'attach',
+      name = 'Attach to remote',
+      host = '127.0.0.1',
+      port = 5678,
+    },
+  }
+  local dopts = { noremap = true, silent = true }
+  vim.keymap.set('n', '<leader>dc', function() require('dap').continue() end, dopts)
+  vim.keymap.set('n', '<leader>ds', function() require('dap').step_over() end, dopts)
+  vim.keymap.set('n', '<leader>di', function() require('dap').step_into() end, dopts)
+  vim.keymap.set('n', '<leader>do', function() require('dap').step_out() end, dopts)
+  vim.keymap.set('n', '<leader>db', function() require('dap').toggle_breakpoint() end, dopts)
+  vim.keymap.set('n', '<leader>du', function() require('dapui').toggle() end, dopts)
+
+
+
+  require("codecompanion").setup({
+    strategies = {
+      chat = {
+        adapter = "copilot",
+      },
+      inline = {
+        adapter = "copilot",
+      },
+    },
+    display = {
+      chat = {
+        window = {
+          position = "right",
+        },
+      },
+    },
+  })
+
+  vim.keymap.set("v", "ga", "<cmd>CodeCompanionChat Add<cr>", { noremap = true, silent = true })
+
+  -- Expand 'cc' into 'CodeCompanion' in the command line
+  vim.cmd([[cab cc CodeCompanion]])
+
   require("img-clip").setup({});
-EOF
-
-lua << EOF
 
   -- indent-blankline
   require("ibl").setup() 
 
-EOF
 
-" highlight yank, neovim-only
-augroup highlight_yank
-    autocmd!
-    au TextYankPost * silent! lua vim.highlight.on_yank{higroup="IncSearch", timeout=300}
-augroup END
-
-
-
-"nvim treesitter
-lua <<EOF
-require'nvim-treesitter.configs'.setup {
-  ensure_installed = {"javascript", "css", "scss", "typescript", "rust"}, -- one of "all", "maintained" (parsers with maintainers), or a list of languages
-  ignore_install = {}, -- List of parsers to ignore installing
-  highlight = {
-    enable = true,              -- false will disable the whole extension
-    disable = {},  -- list of language that will be disabled
-    -- Setting his to true will run `:h syntax` and tree-sitter at the same time.
-    -- Set this to `true` if you depend on 'syntax' being enabled (like for indentation).
-    -- Using this option may slow down your editor, and you may see some duplicate highlights.
-    -- Instead of true it can also be: a list of languages
-    additional_vim_regex_highlighting = false,
-  },
-}
-
--- llm nvim, local ollama
---[[
-require('llm').setup({
-  backend = "ollama",
-  model = "starcoder:7b",
-  url = "http://localhost:11434/api/generate",
-  accept_keymap = "<S-Tab>",
-  dismiss_keymap = "<c-Tab>",
-  -- cf https://github.com/ollama/ollama/blob/main/docs/api.md#parameters
-  request_body = {
-    -- Modelfile options for the model you use
-    options = {
-      temperature = 0.2,
-      top_p = 0.95,
-    }
-  },
-   -- set this if the model supports fill in the middle
-  fim = {
-    enabled = true,
-    prefix = "<fim_prefix>",
-    middle = "<fim_middle>",
-    suffix = "<fim_suffix>",
-  }
-})
-]]
-
-EOF
-
-
-" Avante.nvim configuration
-lua << EOF
+-- endpoint = "https://codestral.mistral.ai/v1/chat/completions",
+-- Avante.nvim configuration
 require('avante_lib').load()
 require('avante').setup({
   provider = "gemini", -- Recommend using Claude
-  gemini = {
-    endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
-    model = "gemini-2.5-pro-exp-03-25",
-    timeout = 30000, -- Timeout in milliseconds
-    temperature = 0,
-    max_tokens = 8192,
+  providers = {
+    gemini = {
+      endpoint = "https://generativelanguage.googleapis.com/v1beta/models",
+      -- model = "gemini-2.5-pro-exp-03-25",
+      model = "gemini-2.5-flash",
+      timeout = 30000, -- Timeout in milliseconds
+      temperature = 0,
+      max_tokens = 8192,
+    },
+    mistral= {
+      __inherited_from = "openai",
+      api_key_name = "CODESTRAL_API_KEY",
+      endpoint = "https://codestral.mistral.ai/v1/chat/completions#",
+      model = "codestral-latest",
+      extra_request_body = {
+        max_tokens = 4096,
+      },
+    },
+    groq = {
+      __inherited_from = "openai",
+      api_key_name = "GROQ_API_KEY",
+      endpoint = "https://api.groq.com/openai/v1/",
+      model = "deepseek-r1-distill-llama-70b",
+    },
   },
   dual_boost = {
     enabled = false,
@@ -1444,8 +1412,8 @@ require('avante').setup({
       dismiss = "<C-]>",
     },
     jump = {
-      next = "]]",
-      prev = "[[",
+      next = "] ]",  -- change (remove space)
+      prev = "[ [",  -- change (remove space)
     },
     submit = {
       normal = "<CR>",
@@ -1499,8 +1467,52 @@ require('avante').setup({
     throttle = 600,
   },
 })
-EOF
 
+-- copilot alt config
+require("copilot").setup({
+  panel = {
+    auto_refresh = false,
+    keymap = {
+      accept = "<CR>",
+      jump_prev = "[[",
+      jump_next = "]]",
+      refresh = "gr",
+      open = "<M-CR>",
+    },
+  },
+  suggestion = {
+    auto_trigger = true,
+    keymap = {
+      accept = "<s-tab>",
+      prev = "<M-[>",
+      next = "<M-]>",
+      dismiss = "<C-]>",
+    },
+  },
+})
+
+-- nvim treesitter
+require'nvim-treesitter'.install { 'javascript', 'css', 'scss', 'typescript', 'python', 'rust' }
+
+require("auto-dark-mode").setup({
+    update_interval = 3000, 
+
+    -- Hook called when the system switches to dark mode.
+    set_dark_mode = function()
+    vim.cmd("colorscheme alienblood")
+    end,
+
+    -- Hook called when the system switches to light mode.
+    set_light_mode = function()
+        vim.cmd("set background=light")
+        vim.cmd("colorscheme PaperColor")
+    end,
+    
+    -- Fallback appearance if auto-detection fails.
+    fallback = "dark" 
+})
+
+EOF
 endif "if has("nvim")
 
 " color scheme
@@ -1521,17 +1533,12 @@ endif
 "let ayucolor = 'dark' " / light / mirage
 "colorscheme ayu
 "
+"
+" moved to auto-dark-mode.nvim
 " colorschemes: catppuccin catppuccin-latte, catppuccin-frappe, catppuccin-macchiato, catppuccin-mocha
-if has("nvim")
-  colorscheme catppuccin-mocha
-endif
-
-" Cody setup. needs to be late
-"lua <<EOF
-  "require('sg').setup({
-    "enable_cody = true,
-  "})
-"EOF
+"if has("nvim")
+  "colorscheme catppuccin-mocha
+"endif
 
 " load db definition
 try 

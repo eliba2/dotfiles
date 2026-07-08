@@ -1,0 +1,59 @@
+# open shell in the current directory
+[[mgr.prepend_keymap]]
+on   = "!"
+for  = "unix"
+run  = 'shell "$SHELL" --block'
+desc = "Open $SHELL here"
+
+# dedukun/bookmarks.yazi (https://github.com/dedukun/bookmarks.yazi)
+# Note: for yazi < v25.5.28 replace "mgr" with "manager". Current yazi is 26.1.22, so "mgr" is correct.
+[[mgr.prepend_keymap]]
+on = [ "m" ]
+run = "plugin bookmarks save"
+desc = "Save current position as a bookmark"
+
+[[mgr.prepend_keymap]]
+on = [ "'" ]
+run = "plugin bookmarks jump"
+desc = "Jump to a bookmark"
+
+[[mgr.prepend_keymap]]
+on = [ "b", "d" ]
+run = "plugin bookmarks delete"
+desc = "Delete a bookmark"
+
+[[mgr.prepend_keymap]]
+on = [ "b", "D" ]
+run = "plugin bookmarks delete_all"
+desc = "Delete all bookmarks"
+
+[[mgr.prepend_keymap]]
+on = ["<C-o>"]
+run = "plugin jump back"
+desc = "Go to previous directory"
+
+[[mgr.prepend_keymap]]
+on = ["<C-I>"]
+run = "plugin jump forward"
+desc = "Go to next directory"
+
+[[mgr.prepend_keymap]]
+on = ["<C-j>"]
+run = "plugin jump light_down"
+desc = "Jump down 5 entries"
+
+[[mgr.prepend_keymap]]
+on = ["<C-k>"]
+run = "plugin jump light_up"
+desc = "Jump up 5 entries"
+
+[[mgr.prepend_keymap]]
+on  = "q"
+run = "plugin confirm-quit"
+
+# worktrees.yazi — browse/remove git worktrees. Leader "\" then "w".
+[[mgr.prepend_keymap]]
+on   = ['\', "w"]
+run  = "plugin worktrees"
+desc = "Manage git worktrees (list / remove)"
+
