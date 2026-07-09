@@ -11,6 +11,35 @@ git submodule update --init      # kitty_search
 ./setup.sh                       # symlink configs into place
 ```
 
+## Migrating an existing machine (Bitbucket → GitHub)
+
+If a machine still has `~/.dotfiles` pointed at the old Bitbucket remote, repoint it
+at GitHub and reconcile. First make sure the machine can reach the private repo
+(`ssh -T git@github.com`, or run `gh auth login`). Then:
+
+```sh
+cd ~/.dotfiles
+git remote rename origin bitbucket                       # keep old as backup (optional)
+git remote add origin git@github.com:eliba2/dotfiles.git # or: git remote set-url origin ...
+git fetch origin
+
+git log --oneline origin/master..master                  # LOCAL commits not on GitHub
+```
+
+- No local-only commits → `git pull --ff-only origin master`
+- Has unpushed local commits → `git pull --rebase origin master` (resolve, then `git push origin master`)
+- Don't need this machine's state → `git reset --hard origin/master`
+
+Then:
+
+```sh
+git submodule update --init
+git branch --set-upstream-to=origin/master master
+```
+
+Since Bitbucket went read-only, those machines likely have unpushed commits — prefer
+the `--rebase` path so nothing is lost.
+
 ## What's here
 
 - **vim / neovim** — `.vimrc`, `.gvimrc`, `init.vim`, `ginit.vim`, `lua/`
