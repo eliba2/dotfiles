@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Opt-in flags (default off). Usage: ./setup.sh [--claude]
+#   --claude   also set up the Claude Code daily work-journal mechanism
+SETUP_CLAUDE=0
+for arg in "$@"; do
+  case "$arg" in
+    --claude) SETUP_CLAUDE=1 ;;
+    *) echo "Unknown option: $arg (supported: --claude)" >&2 ;;
+  esac
+done
+
 # vim
 ln -s ${HOME}/.dotfiles/vim/.vimrc ${HOME}/.vimrc
 ln -s ${HOME}/.dotfiles/vim/.gvimrc ${HOME}/.gvimrc
@@ -46,3 +56,14 @@ ln -s ${HOME}/.dotfiles/yazi/float-theme.toml ${HOME}/.config/yazi-float/theme.t
 # rclone (S3 remote; uses env_auth so no keys are stored here)
 mkdir -p ${HOME}/.config/rclone
 ln -s ${HOME}/.dotfiles/rclone/rclone.conf ${HOME}/.config/rclone/rclone.conf
+
+# claude — daily work-journal mechanism (~/.memory/). Opt-in via --claude, since
+# not every machine runs AI. The installer is idempotent: it symlinks the hook
+# scripts and MERGES the settings.json hooks + CLAUDE.md section (those files also
+# hold machine-specific content, so they aren't symlinked). Journal content in
+# ~/.memory/ stays local per-machine — not tracked here.
+if [ "$SETUP_CLAUDE" -eq 1 ]; then
+  bash ${HOME}/.dotfiles/claude/install-journal.sh
+else
+  echo "Skipping Claude daily-journal setup (pass --claude to enable)."
+fi
