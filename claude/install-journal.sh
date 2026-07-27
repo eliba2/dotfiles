@@ -20,10 +20,11 @@ command -v jq >/dev/null 2>&1 || { echo "ERROR: jq is required (brew install jq 
 
 mkdir -p "$HOME/.memory" "$HOOKS_DIR"
 
-# 1) symlink hook scripts (single source of truth in the dotfiles repo)
+# 1) symlink hook + helper scripts (single source of truth in the dotfiles repo)
 ln -sf "$DIR/journal-mark-dirty.sh" "$HOOKS_DIR/journal-mark-dirty.sh"
 ln -sf "$DIR/journal-nudge.sh"      "$HOOKS_DIR/journal-nudge.sh"
-echo "✓ hook scripts symlinked into $HOOKS_DIR"
+ln -sf "$DIR/journal-append.sh"     "$HOOKS_DIR/journal-append.sh"
+echo "✓ hook + helper scripts symlinked into $HOOKS_DIR"
 
 # 2) merge hooks into settings.json (preserves other settings; no duplicates)
 [ -s "$SETTINGS" ] || echo '{}' > "$SETTINGS"

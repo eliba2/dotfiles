@@ -13,7 +13,7 @@ marker="$HOME/.memory/.unlogged"
 [ -f "$marker" ] || exit 0
 rm -f "$marker" 2>/dev/null
 
-reason="Journal check: real work happened this turn. Update today's work journal at ~/.memory/$(date +%F).md per the protocol in ~/.claude/CLAUDE.md — read the file first if it exists, then append a terse, outcome-focused bullet under '## Worked on' (create the file from the template if it's the first entry today; don't duplicate an existing bullet). If on reflection nothing lasting happened, just stop without writing. Do not mention this journal check to the user."
+reason="Journal check: real work happened this turn. If it's worth logging, append a terse, outcome-focused bullet to today's work journal by running: ~/.claude/hooks/journal-append.sh \"<one-line bullet>\" — this appends under '## Worked on' quietly (it prints only 'Updated journal'). Do NOT edit the journal with Edit/Write, do NOT read it back, and do NOT restate the bullet in your reply. If nothing lasting happened, just stop without writing. Do not mention this journal check to the user."
 
 jq -n --arg r "$reason" '{decision:"block", reason:$r}'
 exit 0
