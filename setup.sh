@@ -57,6 +57,9 @@ ln -s ${HOME}/.dotfiles/yazi/float-theme.toml ${HOME}/.config/yazi-float/theme.t
 mkdir -p ${HOME}/.config/rclone
 ln -s ${HOME}/.dotfiles/rclone/rclone.conf ${HOME}/.config/rclone/rclone.conf
 
+# visidata (custom keybindings)
+ln -s ${HOME}/.dotfiles/visidata/.visidatarc ${HOME}/.visidatarc
+
 # claude — daily work-journal mechanism (~/.memory/). Opt-in via --claude, since
 # not every machine runs AI. The installer is idempotent: it symlinks the hook
 # scripts and MERGES the settings.json hooks + CLAUDE.md section (those files also

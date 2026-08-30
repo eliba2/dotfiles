@@ -1,0 +1,15 @@
+from visidata import TableSheet
+
+# addCommand(keystroke, longname, execution_code, help_text)
+TableSheet.addCommand('^J', 'move-down-5', 'cursorDown(5)', 'move cursor down 5 rows')
+TableSheet.addCommand('^K', 'move-up-5', 'cursorDown(-5)', 'move cursor up 5 rows')
+
+# Ctrl+d and Ctrl+u: Vim-style half-page jump (Steady Cursor)
+# We move the cursor and the viewport by the same amount
+TableSheet.addCommand('^D', 'scroll-half-down', 
+  'step = windowHeight//2; cursorDown(step);', 
+  'scroll down half page (steady cursor)')
+
+TableSheet.addCommand('^U', 'scroll-half-up', 
+  'step = windowHeight//2; cursorDown(-step);', 
+  'scroll up half page (steady cursor)')

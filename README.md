@@ -50,6 +50,7 @@ the `--rebase` path so nothing is lost.
 - **phoenix** — `phoenix.js` (macOS window management + `Cmd-Y` floating-yazi launcher); `phoenix_yabai.sh` + `phoenix_skhdrc` (an alternative yabai/skhd port of the same bindings)
 - **yazi** — `yazi.toml`, `keymap.toml`, `init.lua`, `package.toml`, `float-theme.toml`
 - **rclone** — `rclone.conf` (S3 remote via `env_auth`; no keys stored)
+- **visidata** — `.visidatarc` (custom keybindings)
 - **claude** — daily work-journal mechanism for Claude Code (`~/.memory/`, one Markdown file per day). `install-journal.sh` (run by `setup.sh --claude`, opt-in) symlinks the two hook scripts into `~/.claude/hooks/` and idempotently merges the hooks block into `~/.claude/settings.json` and the protocol section into `~/.claude/CLAUDE.md` (those files also hold machine-specific content, so they're merged, not symlinked). Journal content stays local per machine — see "Not tracked" below.
 
 ## Not tracked — reinstall after `setup.sh`
