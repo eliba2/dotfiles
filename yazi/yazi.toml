@@ -1,9 +1,9 @@
 [opener]
 visidata = [
-  { run = 'vd "$@"', block = true, for = "unix" },
+  { run = 'vd %s', block = true, for = "unix" },
 ]
 onlyoffice = [
-  { run = 'open -a "ONLYOFFICE" "$@"', orphan = true, desc = "OnlyOffice", for = "macos" },
+  { run = 'open -a "ONLYOFFICE" %s', orphan = true, desc = "OnlyOffice", for = "macos" },
 ]
 
 [open]

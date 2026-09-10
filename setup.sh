@@ -26,18 +26,25 @@ ln -s ${HOME}/.dotfiles/kitty/kitty.conf ${HOME}/.config/kitty/kitty.conf
 # phoenix (osx only, https://kasper.github.io/phoenix/)
 ln -s ${HOME}/.dotfiles/phoenix/phoenix.js ${HOME}/.phoenix.js
 
-# yazi (config files only; plugins are NOT tracked here)
+# yazi
 mkdir -p ${HOME}/.config/yazi
 ln -s ${HOME}/.dotfiles/yazi/yazi.toml    ${HOME}/.config/yazi/yazi.toml
 ln -s ${HOME}/.dotfiles/yazi/keymap.toml  ${HOME}/.config/yazi/keymap.toml
 ln -s ${HOME}/.dotfiles/yazi/init.lua     ${HOME}/.config/yazi/init.lua
 ln -s ${HOME}/.dotfiles/yazi/package.toml ${HOME}/.config/yazi/package.toml
-# restore plugins after linking:
-#   ya pkg install     # bookmarks / glow / starship (from package.toml)
-#   # jump.yazi & worktrees.yazi are local-only (no git remote): copy them into
-#   # ~/Tests/ then symlink:
-#   #   ln -s ${HOME}/Tests/jump.yazi      ${HOME}/.config/yazi/plugins/jump.yazi
-#   #   ln -s ${HOME}/Tests/worktrees.yazi ${HOME}/.config/yazi/plugins/worktrees.yazi
+
+# yazi plugins. Two sources:
+#  1. vendored here (not installable from a registry) — see yazi/plugins/README.md
+#  2. package.toml (bookmarks / glow / starship) — restored by `ya pkg install` below
+mkdir -p ${HOME}/.config/yazi/plugins
+for p in jump worktrees confirm-quit; do
+  ln -s ${HOME}/.dotfiles/yazi/plugins/${p}.yazi ${HOME}/.config/yazi/plugins/${p}.yazi
+done
+if command -v ya >/dev/null 2>&1; then
+  ya pkg install
+else
+  echo "yazi not installed yet; run 'ya pkg install' after installing it."
+fi
 
 # yazi floating-window theme home (rose-pine-dawn flavor; used by Phoenix Cmd-Y via
 # YAZI_CONFIG_HOME=~/.config/yazi-float). Reuses the main yazi config via symlinks.
