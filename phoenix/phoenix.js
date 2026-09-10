@@ -27,15 +27,18 @@ const focusWindow = (app, window) => {
   return focused;
 };
 
-const activeOrCycle = (appName, notInstalled=false) => {
-  const allAppInstancesNonFiltered = App.all().filter((s) => s.name() === appName);
-  // searching for only non-hidden apps
-  const allAppInstances = allAppInstancesNonFiltered.filter((appInstance) => {
-    // Get all windows for the current app instance
-    const windows = appInstance.windows();
+const activeOrCycle = (appName, notInstalled=false, windowFilter=null) => {
+  // Optionally drop some windows (e.g. the floating-yazi window) from
+  // consideration, so focus/cycle only sees the app's "real" windows.
+  const wins = (appInstance) => {
+    const ws = appInstance.windows();
+    return windowFilter ? ws.filter(windowFilter) : ws;
+  };
 
-    // Check if any window is not minimized
-    return windows.some((window) => !window.isMinimized());
+  const allAppInstancesNonFiltered = App.all().filter((s) => s.name() === appName);
+  // non-hidden apps that still have a (filtered) non-minimized window
+  const allAppInstances = allAppInstancesNonFiltered.filter((appInstance) => {
+    return wins(appInstance).some((window) => !window.isMinimized());
   });
 
   let app;
@@ -51,21 +54,17 @@ const activeOrCycle = (appName, notInstalled=false) => {
   }
 
   if (app !== undefined) {
-    const windowsNum = app.windows().length;
+    const windowsNum = wins(app).length;
 
     if (app.isActive()) {
       // check for additional windows
       if (windowsNum > 1) {
-        const cycleWindows = app
-          .windows()
-          .filter((window) => !window.isMinimized());
+        const cycleWindows = wins(app).filter((window) => !window.isMinimized());
         const focusedIndex = cycleWindows.findIndex((window) => window.isMain());
         const nextIndex =
           focusedIndex === -1
             ? cycleWindows.length - 1
             : (focusedIndex - 1 + cycleWindows.length) % cycleWindows.length;
-        console.log("***************************** focusedIndex", focusedIndex);
-        console.log("***************************** nextIndex", nextIndex);
         focusWindow(app, cycleWindows[nextIndex]);
         return;
       } else {
@@ -90,7 +89,7 @@ const activeOrCycle = (appName, notInstalled=false) => {
             Storage.set(key, appCycleNum);
             focusWindow(
               allAppInstances[appCycleNum],
-              allAppInstances[appCycleNum].windows()[0]
+              wins(allAppInstances[appCycleNum])[0]
             );
           }
         } catch (e) {
@@ -113,14 +112,14 @@ const activeOrCycle = (appName, notInstalled=false) => {
         if (notInstalled) {
           focusWindow(
             allAppInstances[appCycleNum],
-            allAppInstances[appCycleNum].windows()[0]
+            wins(allAppInstances[appCycleNum])[0]
           );
         }
         else {
-          focusWindow(app, app.windows()[appCycleNum]);
+          focusWindow(app, wins(app)[appCycleNum]);
         }
       } else {
-        focusWindow(app, app.windows()[0]);
+        focusWindow(app, wins(app)[0]);
       }
     }
   }
@@ -203,7 +202,9 @@ Key.on("k", ["ctrl", "shift"], async function (_, repeat) {
   if (repeat) {
     return;
   }
-  activeOrCycle("kitty");
+  // Exclude the floating-yazi window ("Yazi: <dir>") so Ctrl-Shift-K jumps to a
+  // real terminal even while the floating yazi (a separate kitty process) is open.
+  activeOrCycle("kitty", false, (w) => (w.title() || "").indexOf("Yazi:") !== 0);
 });
 
 Key.on("l", ["ctrl", "shift"], async function (_, repeat) {
@@ -237,7 +238,7 @@ Key.on("up", ["cmd"], () => {
 });
 
 // Floating Yazi window (a dedicated kitty instance running yazi).
-// Cmd-; focuses it if it's already open, otherwise launches a fresh one.
+// Cmd-Y focuses it if it's already open, otherwise launches a fresh one.
 // Uses a standalone kitty config so it never touches the main kitty.conf.
 const KITTY_APP = "/Applications/kitty.app";
 const KITTEN_BIN = "/Applications/kitty.app/Contents/MacOS/kitten";
@@ -253,7 +254,7 @@ const YAZI_START_DIR = "/Users/elibabila";
 // the floating yazi is themed — the terminal yazi keeps its default theme.
 const YAZI_CONFIG_HOME_DIR = "/Users/elibabila/.config/yazi-float";
 
-// Cmd-; : focus the floating window if that exact kitty instance is alive
+// Cmd-Y : focus the floating window if that exact kitty instance is alive
 // (found via ITS OWN socket), otherwise launch it. We identify it by the
 // socket, NOT the window title, because terminal yazi sessions share the same
 // "Yazi: <dir>" title and would otherwise be focused by mistake.
@@ -262,7 +263,10 @@ const YAZI_CONFIG_HOME_DIR = "/Users/elibabila/.config/yazi-float";
 // becomes its OWN macOS "responsible process". Otherwise every protected-folder
 // access by yazi (~/Downloads, etc.) would prompt for *Phoenix*; via `open` it's
 // attributed to kitty, which already has those permissions.
-const YAZI_FOCUS_OR_LAUNCH =
+//
+// w/h (pixels) size the new window; passed as kitty -o overrides so it opens at
+// 80% of the screen (computed in the handler below).
+const yaziFocusOrLaunch = (w, h) =>
   'sock="$(ls -t /tmp/kitty-yazi-float-* 2>/dev/null | head -1)"; ' +
   'if [ -n "$sock" ] && "' +
   KITTEN_BIN +
@@ -273,18 +277,54 @@ const YAZI_FOCUS_OR_LAUNCH =
   YAZI_CONFIG_HOME_DIR +
   '" -n -a "' +
   KITTY_APP +
+  '" --args -o initial_window_width=' +
+  w +
+  ' -o initial_window_height=' +
+  h +
   // Run yazi via a no-rc zsh (`-f`, skips oh-my-zsh so it's fast & flash-free)
   // that sources only what tools launched from yazi need on PATH: nvm (node,
   // for coc.nvim), Homebrew, and ~/.local/bin (vd, etc.). `open` gives launchd's
   // minimal env, which otherwise breaks those tools.
-  "\" --args /bin/zsh -fc 'export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\" >/dev/null 2>&1; eval \"$(/opt/homebrew/bin/brew shellenv)\"; export PATH=\"$HOME/.local/bin:$PATH\"; exec " +
+  " /bin/zsh -fc 'export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\" >/dev/null 2>&1; eval \"$(/opt/homebrew/bin/brew shellenv)\"; export PATH=\"$HOME/.local/bin:$PATH\"; exec " +
   YAZI_BIN +
   " " +
   YAZI_START_DIR +
   "'";
 
+// Enforce the floating yazi window at 80% x 80%, centered on its screen. `open`
+// launches asynchronously, so poll briefly until the yazi window is focused,
+// then set its frame. (kitty's -o gives the right initial size to minimize the
+// visible jump; Phoenix does the authoritative size + centering.)
+const sizeAndCenterYazi = (attempt) => {
+  const win = Window.focused();
+  if (
+    win &&
+    win.app() &&
+    win.app().name() === "kitty" &&
+    (win.title() || "").indexOf("Yazi:") === 0
+  ) {
+    const sf = Screen.main().flippedVisibleFrame();
+    const w = Math.round(sf.width * 0.8);
+    const h = Math.round(sf.height * 0.8);
+    win.setFrame({
+      x: sf.x + Math.round((sf.width - w) / 2),
+      y: sf.y + Math.round((sf.height - h) / 2),
+      width: w,
+      height: h,
+    });
+    return;
+  }
+  if ((attempt || 0) < 20) {
+    Timer.after(0.15, () => sizeAndCenterYazi((attempt || 0) + 1));
+  }
+};
+
 Key.on("y", ["cmd"], () => {
-  Task.run("/bin/sh", ["-c", YAZI_FOCUS_OR_LAUNCH], (task) => {
+  // Size the floating window at 80% x 80% of the active screen's usable area.
+  const sf = Screen.main().flippedVisibleFrame();
+  const w = Math.round(sf.width * 0.8);
+  const h = Math.round(sf.height * 0.8);
+  Task.run("/bin/sh", ["-c", yaziFocusOrLaunch(w, h)], (task) => {
     if (task.status !== 0) {
       console.log(
         "yazi float focus/launch failed (status " +
@@ -296,4 +336,5 @@ Key.on("y", ["cmd"], () => {
       );
     }
   });
+  sizeAndCenterYazi(0);
 });
