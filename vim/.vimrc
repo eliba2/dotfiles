@@ -339,6 +339,12 @@ endif
 " remove highlight
 nnoremap <C-h> :noh<CR>
 
+" Jump to the furthest split in each direction.
+nnoremap <silent> <C-w><C-h> :99wincmd h<CR>
+nnoremap <silent> <C-w><C-j> :99wincmd j<CR>
+nnoremap <silent> <C-w><C-k> :99wincmd k<CR>
+nnoremap <silent> <C-w><C-l> :99wincmd l<CR>
+
 " fzf
 set rtp+=/usr/local/opt/fzf
 let g:fzf_launcher = "~/bin/fzf-macvim.sh %s"
