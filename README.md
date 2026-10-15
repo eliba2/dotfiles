@@ -46,8 +46,8 @@ the `--rebase` path so nothing is lost.
 ## What's here
 
 - **vim / neovim** — `.vimrc`, `.gvimrc`, `init.vim`, `ginit.vim`, `lua/`
-- **kitty** — `kitty.conf`; `yazi-float/` (dedicated config + dock icon for the floating yazi window); `kitty_search` (submodule)
-- **phoenix** — `phoenix.js` (macOS window management + `Cmd-Y` floating-yazi launcher); `phoenix_yabai.sh` + `phoenix_skhdrc` (an alternative yabai/skhd port of the same bindings)
+- **kitty** — `kitty.conf`; `yazi-float/` and `ktcal-float/` (dedicated config + dock icon for the floating yazi / ktcal windows); `kitty_search` (submodule)
+- **phoenix** — `phoenix.js` (macOS window management + `Cmd-Y` floating-yazi and `Cmd-;` floating-[ktcal](https://github.com/eliba2/ktcal) launchers); `phoenix_yabai.sh` + `phoenix_skhdrc` (an alternative yabai/skhd port of the same bindings)
 - **yazi** — `yazi.toml`, `keymap.toml`, `init.lua`, `package.toml`, `float-theme.toml`
 - **rclone** — `rclone.conf` (S3 remote via `env_auth`; no keys stored)
 - **visidata** — `.visidatarc` (custom keybindings)
@@ -55,7 +55,7 @@ the `--rebase` path so nothing is lost.
 
 ## Not tracked — reinstall after `setup.sh`
 
-- **yazi plugins:** `ya pkg install` (bookmarks / glow / starship). `jump.yazi` & `worktrees.yazi` are local-only — copy them into `~/Tests/` and symlink into `~/.config/yazi/plugins/`.
+- **yazi plugins:** `ya pkg install` (bookmarks / glow / starship). `jump.yazi`, `worktrees.yazi` & `confirm-quit.yazi` are vendored in `yazi/plugins/` and symlinked by `setup.sh`.
 - **floating yazi theme:** `git clone https://github.com/Mintass/rose-pine-dawn.yazi ~/.config/yazi-float/flavors/rose-pine-dawn.yazi`
 - **tools:** nvim, yazi, rclone (official build, not Homebrew's — the Homebrew build disables `mount`), node (via nvm).
 - **claude journal content:** `~/.memory/*.md` is per-machine work history and is intentionally not tracked. The mechanism replicates via `setup.sh`; the daily entries do not. Requires `jq`.

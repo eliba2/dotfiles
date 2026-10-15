@@ -57,8 +57,9 @@ ln -s ${HOME}/.config/yazi/plugins      ${HOME}/.config/yazi-float/plugins
 ln -s ${HOME}/.dotfiles/yazi/float-theme.toml ${HOME}/.config/yazi-float/theme.toml
 # flavor (re-clone):
 #   git clone https://github.com/Mintass/rose-pine-dawn.yazi ${HOME}/.config/yazi-float/flavors/rose-pine-dawn.yazi
-# (the floating kitty config + icon live in ~/.dotfiles/kitty/yazi-float and are
-#  referenced directly by phoenix.js, so they need no symlink.)
+# (the floating kitty configs + icons live in ~/.dotfiles/kitty/yazi-float and
+#  ~/.dotfiles/kitty/ktcal-float and are referenced directly by phoenix.js, so they
+#  need no symlink. The Cmd-; ktcal float expects ktcal at ~/Library/pnpm/bin/ktcal.)
 
 # rclone (S3 remote; uses env_auth so no keys are stored here)
 mkdir -p ${HOME}/.config/rclone
