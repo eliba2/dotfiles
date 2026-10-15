@@ -57,3 +57,10 @@ on   = ['\', "w"]
 run  = "plugin worktrees"
 desc = "Manage git worktrees (list / remove)"
 
+# Copy the hovered file's contents (not its path) to the clipboard.
+# Use %s instead of %h to concatenate every selected file: 'cat %s | pbcopy'.
+[[mgr.prepend_keymap]]
+on   = ["c", "t"]
+for  = "macos"
+run  = 'shell "pbcopy < %h"'
+desc = "Copy file contents to clipboard"
