@@ -245,6 +245,9 @@ Key.on("up", ["cmd"], () => {
 // sized 80% x 80% and centered on the active screen.
 const KITTY_APP = "/Applications/kitty.app";
 const KITTEN_BIN = "/Applications/kitty.app/Contents/MacOS/kitten";
+// macOS title bar height. kitty's --position and initial_window_height apply to
+// the content area (below the title bar), while Phoenix frames include it.
+const TITLEBAR_H = 28;
 
 const FLOATS = {
   // yazi opens in ~ and drives the window title ("Yazi: <dir>"), which updates
@@ -289,9 +292,10 @@ const isFloatWindow = (w) => {
 // access (~/Downloads, etc.) would prompt for *Phoenix*; via `open` it's
 // attributed to kitty, which already has those permissions.
 //
-// w/h (pixels) size the new window; passed as kitty -o overrides so it opens at
-// 80% of the screen (computed in the handler below).
-const floatFocusOrLaunch = (f, w, h) =>
+// fr (floatFrame()) places the new window: --position opens it already centered
+// and the -o overrides size it at 80% of the screen, so Phoenix's follow-up
+// setFrame (sizeAndCenterFloat) is at most a small correction, not a visible jump.
+const floatFocusOrLaunch = (f, fr) =>
   'sock="$(ls -t ' +
   f.socket +
   '-* 2>/dev/null | head -1)"; ' +
@@ -308,10 +312,14 @@ const floatFocusOrLaunch = (f, w, h) =>
   KITTY_APP +
   '" --args' +
   (f.title ? ' --title "' + f.title + '"' : "") +
+  " --position=" +
+  fr.x +
+  "x" +
+  (fr.y + TITLEBAR_H) +
   " -o initial_window_width=" +
-  w +
+  fr.width +
   " -o initial_window_height=" +
-  h +
+  (fr.height - TITLEBAR_H) +
   // Run the program via a no-rc zsh (`-f`, skips oh-my-zsh so it's fast & flash-free)
   // that sets up only what's needed on PATH: node (for ktcal and coc.nvim),
   // Homebrew, and ~/.local/bin (vd, etc.). `open` gives launchd's minimal env,
@@ -337,9 +345,9 @@ const floatFrame = () => {
 };
 
 // Enforce the floating window's frame. `open` launches asynchronously, so poll
-// briefly until the window is focused, then set its frame. (kitty's -o gives the
-// right initial size to minimize the visible jump; Phoenix does the
-// authoritative size + centering.)
+// briefly until the window is focused, then set its frame. (kitty's --position
+// and -o give the right initial placement to minimize the visible jump; Phoenix
+// does the authoritative size + centering.)
 const sizeAndCenterFloat = (f, attempt) => {
   const win = Window.focused();
   if (win && win.app() && win.app().name() === "kitty" && f.isWindow(win.title() || "")) {
@@ -353,8 +361,7 @@ const sizeAndCenterFloat = (f, attempt) => {
 
 const toggleFloat = (name) => {
   const f = FLOATS[name];
-  const { width, height } = floatFrame();
-  Task.run("/bin/sh", ["-c", floatFocusOrLaunch(f, width, height)], (task) => {
+  Task.run("/bin/sh", ["-c", floatFocusOrLaunch(f, floatFrame())], (task) => {
     if (task.status !== 0) {
       console.log(
         name + " float focus/launch failed (status " + task.status + "): " + task.error + " " + task.output
